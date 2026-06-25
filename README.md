@@ -72,6 +72,26 @@ SafeGuard is built as a split-architecture, high-velocity streaming system:
 
 ---
 
+## 📋 Work Permit Control & Compound Risk Mechanics
+
+In high-hazard environments, operations like welding, pipe-cutting, or electrical repairs require active **Work Clearances (Permits)**. SafeGuard implements a digital, event-driven permit registry that dynamically shapes the facility's safety state and routing grids.
+
+### 1. Permit Controller Interface
+*   **Active Clearances:** Tracks currently approved permits (e.g. Hot Work, Cold Work) running on the facility floor.
+*   **Authorization Form:** Permits operators to issue new clearances by choosing a **Target Sector** (Node) and a **Clearing Activity Type**.
+
+### 2. Compound Risk Fusion Rule
+SafeGuard detects risk by combining environmental telemetry with operational context:
+$$\text{Compound Hazard} = (\text{Gas Level} > 12.0\%) \land (\text{Active Permit} == \text{"Hot Work"}) \land (\text{Active Personnel} > 0)$$
+*   **The Scenario:** A gas level of 12.5% is sub-critical if no ignition source exists. A welding torch is safe if the atmosphere is clean. However, **Gas Leakage + Hot Work (Welding)** at the *Gas Storage Zone (Node 4)* triggers a high-severity explosion threat.
+*   **The Response:** The moments this rule compiles to `True`, the backend latches the system status to `EVACUATING`, logs a flight snapshot to `/audits`, and triggers A* routing.
+
+### 3. Resolution & Cool-Off Dynamics
+*   **Revocation / Close Permit:** Clicking **REVOKE** on an active Hot Work permit breaks the compound hazard condition. The engine transitions the alert into a **30-second latching cool-off buffer** (displaying a warning countdown timer on the screen) to simulate safety inertia.
+*   **Manual Override:** Click the **Resolve Incident** button to instantly override the cool-off timer and reset the facility floor status back to normal.
+
+---
+
 ## 🚀 Key Features
 
 * **Cinematic Welcome Experience:** A premium landing interface displaying dynamic radar pulses, neon grids, and cyan particle backdrops.
