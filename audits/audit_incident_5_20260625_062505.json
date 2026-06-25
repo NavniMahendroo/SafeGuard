@@ -1,0 +1,256 @@
+{
+  "timestamp": "2026-06-25T06:25:05.162042+00:00",
+  "incident_id": 5,
+  "trigger_reason": "Gas level exceeded safety threshold (12.13%) during Hot Work",
+  "gas_level": 12.13,
+  "active_permits": [
+    {
+      "zone_id": 4,
+      "permit_type": "Hot Work"
+    }
+  ],
+  "workers": [
+    {
+      "id": "W-101",
+      "name": "Rajesh Kumar",
+      "role": "Pipefitter",
+      "current_node": 1,
+      "coords": [
+        156.5685424949238,
+        443.4314575050762
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-102",
+      "name": "Ananya Sharma",
+      "role": "Electrical Technician",
+      "current_node": 4,
+      "coords": [
+        600.0,
+        660.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-103",
+      "name": "Marcus Aurelius",
+      "role": "Safety Engineer",
+      "current_node": 6,
+      "coords": [
+        833.4359764529725,
+        544.3760156980184
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-104",
+      "name": "Kenji Sato",
+      "role": "Process Operator",
+      "current_node": 2,
+      "coords": [
+        300.0,
+        380.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-105",
+      "name": "Elena Rostova",
+      "role": "Maintenance Supervisor",
+      "current_node": 2,
+      "coords": [
+        102.01010126776669,
+        497.9898987322333
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-106",
+      "name": "Carlos Mendez",
+      "role": "Welding Inspector",
+      "current_node": 5,
+      "coords": [
+        633.2820117735138,
+        677.8119921509908
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-107",
+      "name": "Sarah Jenkins",
+      "role": "Instrument Specialist",
+      "current_node": 3,
+      "coords": [
+        340.0,
+        700.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-108",
+      "name": "David Vance",
+      "role": "Chemical Engineer",
+      "current_node": 6,
+      "coords": [
+        900,
+        500
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-109",
+      "name": "Amina Diallo",
+      "role": "HVAC Technician",
+      "current_node": 4,
+      "coords": [
+        520.0,
+        300.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-110",
+      "name": "Li Wei",
+      "role": "Control Systems Lead",
+      "current_node": 4,
+      "coords": [
+        600,
+        300
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-111",
+      "name": "Vikram Singh",
+      "role": "Mechanical Tech",
+      "current_node": 5,
+      "coords": [
+        600.0,
+        660.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-112",
+      "name": "Sophie Dubois",
+      "role": "HSE Coordinator",
+      "current_node": 4,
+      "coords": [
+        733.1280470940551,
+        388.7520313960367
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-113",
+      "name": "John Miller",
+      "role": "Millwright",
+      "current_node": 3,
+      "coords": [
+        580.0,
+        700.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-114",
+      "name": "Hiroshi Tanaka",
+      "role": "Operations Manager",
+      "current_node": 3,
+      "coords": [
+        186.8629150101524,
+        586.8629150101524
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-115",
+      "name": "Maria Rossi",
+      "role": "Scaffolder",
+      "current_node": 3,
+      "coords": [
+        300.0,
+        620.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-116",
+      "name": "Pavel Petrov",
+      "role": "Valves Specialist",
+      "current_node": 4,
+      "coords": [
+        600.0,
+        380.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-117",
+      "name": "Fatima Al-Sayed",
+      "role": "Analyst",
+      "current_node": 2,
+      "coords": [
+        271.7157287525381,
+        328.2842712474619
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-118",
+      "name": "Hans Mueller",
+      "role": "Boiler Operator",
+      "current_node": 1,
+      "coords": [
+        100,
+        500
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-119",
+      "name": "Chao Wang",
+      "role": "Project Engineer",
+      "current_node": 4,
+      "coords": [
+        320.0,
+        300.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-120",
+      "name": "Lucia Santos",
+      "role": "Lab Technician",
+      "current_node": 5,
+      "coords": [
+        666.5640235470275,
+        655.6239843019816
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-121",
+      "name": "Ahmed Mansour",
+      "role": "Turbine Tech",
+      "current_node": 2,
+      "coords": [
+        158.5786437626905,
+        441.4213562373095
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-122",
+      "name": "Yuki Sato",
+      "role": "Inspector",
+      "current_node": 3,
+      "coords": [
+        271.7157287525381,
+        671.7157287525381
+      ],
+      "status": "Safe"
+    }
+  ]
+}

@@ -180,6 +180,20 @@ export const useSafetyStore = create((set, get) => {
       } catch (err) {
         console.error('[SafeGuard Store] Failed to fetch incidents history:', err);
       }
+    },
+
+    resolveIncident: async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/incidents/resolve', {
+          method: 'POST'
+        });
+        if (res.ok) {
+          // Re-fetch incidents and refresh local variables
+          await get().fetchIncidents();
+        }
+      } catch (err) {
+        console.error('[SafeGuard Store] Failed to resolve incident:', err);
+      }
     }
   };
 });

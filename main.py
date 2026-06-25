@@ -2,6 +2,9 @@ import asyncio
 import datetime
 import math
 import random
+import time
+import os
+import json
 from contextlib import asynccontextmanager
 from typing import Dict, List, Set, Optional
 
@@ -30,7 +33,21 @@ class IncidentReport(Base):
     trigger_reason = Column(String, nullable=False)
     gas_level = Column(Float, nullable=False)
     affected_workers = Column(String, nullable=False)  # Comma-separated list of worker IDs
+    status = Column(String, default="ACTIVE")  # 'ACTIVE', 'EVACUATING', 'RESOLVED'
     resolved_at = Column(DateTime, nullable=True)
+
+class WorkerModel(Base):
+    __tablename__ = "workers"
+    
+    id = Column(String, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    current_node = Column(Integer, default=1)
+    x = Column(Float, default=100.0)
+    y = Column(Float, default=500.0)
+    destination = Column(Integer, nullable=True)
+    status = Column(String, default="Safe")  # 'Safe', 'Rerouting', 'Evacuated'
+    color = Column(String, default="#3b82f6")
 
 class PermitLog(Base):
     __tablename__ = "permit_logs"
@@ -58,9 +75,27 @@ def init_db():
                 zone_name="Gas Storage Zone",
                 permit_type="Hot Work",
                 status="Active"
-            )
+              )
             db.add(permit)
             db.commit()
+
+        # Load workers from DB to state["workers"] if any exist
+        db_workers = db.query(WorkerModel).all()
+        if db_workers:
+            state["workers"] = {}
+            for w in db_workers:
+                state["workers"][w.id] = {
+                    "id": w.id,
+                    "name": w.name,
+                    "role": w.role,
+                    "current_node": w.current_node,
+                    "coords": [w.x, w.y],
+                    "destination": w.destination,
+                    "path": [],
+                    "status": w.status,
+                    "color": w.color
+                }
+            print(f"[SafeGuard Startup] Loaded {len(db_workers)} workers from DB.")
     finally:
         db.close()
 
@@ -98,6 +133,7 @@ class IncidentResponse(BaseModel):
     trigger_reason: str
     gas_level: float
     affected_workers: str
+    status: str
     resolved_at: Optional[datetime.datetime] = None
     
     class Config:
@@ -181,7 +217,8 @@ state: Dict = {
         4: "Hot Work"  # In-memory mapping of active permit (Node 4: Hot Work)
     },
     "critical_alert": False,
-    "active_incident_id": None
+    "active_incident_id": None,
+    "hazard_cleared_at": None
 }
 
 # Thread-safety lock for state modifications
@@ -280,73 +317,113 @@ async def telemetry_simulator_loop():
                 )
                 
                 # Handle State Transition: NORMAL -> CRITICAL
-                if risk_triggered and not state["critical_alert"]:
-                    state["critical_alert"] = True
-                    print(f"\n[ALERT] Compound Risk Triggered! Gas Level: {state['sensors']['gas_level']}%. Evacuating floor!")
+                if risk_triggered:
+                    state["hazard_cleared_at"] = None  # Cancel cool-off if danger active
                     
-                    # Create DB Session and record incident
-                    db = SessionLocal()
-                    try:
-                        incident = IncidentReport(
-                            trigger_reason=f"Gas level exceeded safety threshold ({state['sensors']['gas_level']}%) during Hot Work",
-                            gas_level=state["sensors"]["gas_level"],
-                            affected_workers=",".join(active_workers)
-                        )
-                        db.add(incident)
-                        db.commit()
-                        state["active_incident_id"] = incident.id
-                        print(f"[DB] Logged Incident Report ID: {incident.id}")
-                    except Exception as e:
-                        print(f"[DB Error] Failed to log incident: {e}")
-                    finally:
-                        db.close()
-                    
-                    # Reroute workers immediately away from Node 4 (Gas Storage)
-                    for w_id, worker in state["workers"].items():
-                        if worker["status"] != "Evacuated":
-                            # Reroute to nearest safe exit (avoiding Node 4)
-                            curr = worker["current_node"]
-                            
-                            # If worker is currently moving and heading towards Node 4, force return to last node
-                            if worker["path"] and worker["path"][0] == 4:
-                                # Reverse route
-                                start_node = curr
-                            elif worker["path"]:
-                                start_node = worker["path"][0]
-                            else:
-                                start_node = curr
-                                
-                            safe_exit = get_nearest_exit(start_node, active_alert=True)
-                            new_path = find_path(start_node, safe_exit, active_alert=True)
-                            
-                            worker["destination"] = safe_exit
-                            worker["path"] = new_path
-                            worker["status"] = "Rerouting"
-                
-                # Handle State Transition: CRITICAL -> NORMAL (Gas drops below 10.0%)
-                elif not risk_triggered and state["critical_alert"] and state["sensors"]["gas_level"] < 10.0:
-                    state["critical_alert"] = False
-                    print(f"\n[INFO] Hazard resolved. Gas level: {state['sensors']['gas_level']}%. Resuming operations.")
-                    
-                    # Close incident in database
-                    if state["active_incident_id"] is not None:
+                    if not state["critical_alert"]:
+                        state["critical_alert"] = True
+                        print(f"\n[ALERT] Compound Risk Triggered! Gas Level: {state['sensors']['gas_level']}%. Evacuating floor!")
+                        
+                        # Create DB Session and record incident
                         db = SessionLocal()
                         try:
-                            incident = db.query(IncidentReport).filter(IncidentReport.id == state["active_incident_id"]).first()
-                            if incident:
-                                incident.resolved_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
-                                db.commit()
-                                print(f"[DB] Incident ID {incident.id} marked as resolved.")
+                            incident = IncidentReport(
+                                trigger_reason=f"Gas level exceeded safety threshold ({state['sensors']['gas_level']}%) during Hot Work",
+                                gas_level=state["sensors"]["gas_level"],
+                                affected_workers=",".join(active_workers),
+                                status="EVACUATING"
+                            )
+                            db.add(incident)
+                            db.commit()
+                            db.refresh(incident)
+                            state["active_incident_id"] = incident.id
+                            print(f"[DB] Logged Incident Report ID: {incident.id}")
+                            
+                            # ─── FLIGHT DATA RECORDER SNAPSHOT ───
+                            snapshot = {
+                                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                                "incident_id": incident.id,
+                                "trigger_reason": incident.trigger_reason,
+                                "gas_level": state["sensors"]["gas_level"],
+                                "active_permits": [
+                                    {"zone_id": zid, "permit_type": ptype}
+                                    for zid, ptype in state["permits"].items()
+                                ],
+                                "workers": [
+                                    {
+                                        "id": w["id"],
+                                        "name": w.get("name", "Unknown"),
+                                        "role": w.get("role", "Worker"),
+                                        "current_node": w["current_node"],
+                                        "coords": w["coords"],
+                                        "status": w["status"]
+                                    } for w in state["workers"].values()
+                                ]
+                            }
+                            # Write snapshot to audits directory
+                            audits_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audits")
+                            os.makedirs(audits_dir, exist_ok=True)
+                            filename = f"audit_incident_{incident.id}_{datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+                            filepath = os.path.join(audits_dir, filename)
+                            with open(filepath, "w") as f:
+                                json.dump(snapshot, f, indent=2)
+                            print(f"[Flight Data Recorder] Snapshot saved to: {filepath}")
+                            
                         except Exception as e:
-                            print(f"[DB Error] Failed to update incident: {e}")
+                            print(f"[DB Error] Failed to log incident: {e}")
                         finally:
                             db.close()
-                        state["active_incident_id"] = None
+                        
+                        # Reroute workers immediately away from Node 4 (Gas Storage)
+                        for w_id, worker in state["workers"].items():
+                            if worker["status"] != "Evacuated":
+                                curr = worker["current_node"]
+                                if worker["path"] and worker["path"][0] == 4:
+                                    start_node = curr
+                                elif worker["path"]:
+                                    start_node = worker["path"][0]
+                                else:
+                                    start_node = curr
+                                    
+                                safe_exit = get_nearest_exit(start_node, active_alert=True)
+                                new_path = find_path(start_node, safe_exit, active_alert=True)
+                                
+                                worker["destination"] = safe_exit
+                                worker["path"] = new_path
+                                worker["status"] = "Rerouting"
+                
+                # Handle State Transition: CRITICAL -> NORMAL (with Latching Cool-off)
+                elif not risk_triggered and state["critical_alert"]:
+                    if state["hazard_cleared_at"] is None:
+                        state["hazard_cleared_at"] = time.time()
+                        print(f"\n[INFO] Hazard conditions resolved. Starting 30-second latching cool-off period...")
                     
-                    # Revert workers to normal safe status and let them choose new destinations
-                    for w_id, worker in state["workers"].items():
-                        worker["status"] = "Safe"
-                        worker["path"] = []  # Let simulator assign new target
+                    elapsed = time.time() - state["hazard_cleared_at"]
+                    if elapsed >= 30.0:
+                        state["critical_alert"] = False
+                        state["hazard_cleared_at"] = None
+                        print(f"\n[INFO] 30s Cool-off elapsed. Restoring normal operations.")
+                        
+                        # Close incident in database
+                        if state["active_incident_id"] is not None:
+                            db = SessionLocal()
+                            try:
+                                incident = db.query(IncidentReport).filter(IncidentReport.id == state["active_incident_id"]).first()
+                                if incident:
+                                    incident.status = "RESOLVED"
+                                    incident.resolved_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+                                    db.commit()
+                                    print(f"[DB] Incident ID {incident.id} marked as RESOLVED.")
+                            except Exception as e:
+                                print(f"[DB Error] Failed to update incident: {e}")
+                            finally:
+                                db.close()
+                            state["active_incident_id"] = None
+                        
+                        # Revert workers to normal safe status
+                        for w_id, worker in state["workers"].items():
+                            worker["status"] = "Safe"
+                            worker["path"] = []
                 
                 # 3. Simulate Worker Movement Along Calculated Paths
                 for w_id, worker in state["workers"].items():
@@ -568,3 +645,28 @@ def close_permit(permit_id: int, db: Session = Depends(get_db)):
         del state["permits"][permit.zone_id]
         
     return permit
+
+@app.post("/api/incidents/resolve")
+async def resolve_active_incident(db: Session = Depends(get_db)):
+    """Manually resolves the active incident, bypassing the latching cool-off."""
+    async with state_lock:
+        incident_id = state["active_incident_id"]
+        if incident_id is not None:
+            incident = db.query(IncidentReport).filter(IncidentReport.id == incident_id).first()
+            if incident:
+                incident.status = "RESOLVED"
+                incident.resolved_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+                db.commit()
+                print(f"[API] Incident ID {incident.id} manually resolved by operator.")
+            state["active_incident_id"] = None
+        
+        # Reset alert states immediately
+        state["critical_alert"] = False
+        state["hazard_cleared_at"] = None
+        
+        # Revert all workers back to "Safe" status and clear paths
+        for w_id, worker in state["workers"].items():
+            worker["status"] = "Safe"
+            worker["path"] = []
+            
+        return {"status": "SUCCESS", "message": "Incident manually resolved, alert cleared."}

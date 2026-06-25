@@ -35,7 +35,8 @@ function CommandCenter({ onBack }) {
     createPermit,
     closePermit,
     fetchPermits,
-    fetchIncidents
+    fetchIncidents,
+    resolveIncident
   } = useSafetyStore();
 
   const [selectedZone, setSelectedZone] = useState('');
@@ -140,6 +141,15 @@ function CommandCenter({ onBack }) {
               <Activity className="w-4 h-4 text-cyan-400" />
               <span className="text-slate-500">TELEMETRY STATS:</span>
               {getStatusBadge()}
+              
+              {systemStatus === 'EVACUATING' && (
+                <button
+                  onClick={resolveIncident}
+                  className="ml-2 px-2 py-0.5 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white text-[9px] font-black uppercase tracking-wider rounded border border-rose-500/30 transition shadow-md animate-pulse"
+                >
+                  Resolve
+                </button>
+              )}
             </div>
           </div>
 
@@ -215,6 +225,32 @@ function CommandCenter({ onBack }) {
 
         {/* RIGHT COLUMN: Sensor Feed & Work Permit Controls */}
         <section className="flex flex-col gap-6">
+
+          {/* CRITICAL WARNING BANNER IF EVACUATING */}
+          {systemStatus === 'EVACUATING' && (
+            <div className="bg-rose-950/80 border-2 border-rose-600 rounded-xl p-5 shadow-lg shadow-rose-950/20 text-rose-250 animate-pulse flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-rose-600 rounded-full text-slate-900">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black tracking-wider uppercase text-rose-50">CRITICAL SAFETY ALERT</h3>
+                  <p className="text-[10px] text-rose-300 font-semibold font-mono">COMPOUND HAZARD EVACUATION ACTIVE</p>
+                </div>
+              </div>
+              
+              <div className="bg-rose-900/30 p-3 rounded border border-rose-800/40 text-[10px] leading-relaxed font-mono">
+                <strong>STATUS:</strong> Gas Storage Area (Node 4) telemetry exceeds safety threshold with active Hot Work. Dynamic A* evacuation routing coordinates are online.
+              </div>
+
+              <button
+                onClick={resolveIncident}
+                className="w-full py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-widest rounded-lg border border-rose-450/30 transition shadow-md"
+              >
+                Resolve Incident & Reset Alert
+              </button>
+            </div>
+          )}
 
           {/* TELEMETRY FEED (MIDDLE RIGHT PANEL) */}
           <div className="bg-[#0b0e1a] rounded-xl border border-slate-900 p-5 shadow-md flex flex-col gap-4">

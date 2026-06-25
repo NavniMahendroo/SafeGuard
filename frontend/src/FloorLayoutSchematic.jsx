@@ -63,16 +63,43 @@ function FloorLayoutSchematic({ graph, workers, gasLevel, systemStatus, safeRout
 
   return (
     <div className="relative w-full h-full bg-[#070b13] rounded-lg border border-slate-900 overflow-hidden flex items-center justify-center p-4">
-      {/* Self-contained CSS for path marching animations and glows */}
+      {/* Self-contained CSS for path marching animations, glows, and expanding hazard radii */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes march {
           to {
             stroke-dashoffset: -20;
           }
         }
+        @keyframes pulse-opacity {
+          0%, 100% {
+            opacity: 0.95;
+            stroke-width: 8;
+            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.8));
+          }
+          50% {
+            opacity: 0.6;
+            stroke-width: 10;
+            filter: drop-shadow(0 0 18px rgba(16, 185, 129, 0.95));
+          }
+        }
+        @keyframes expand-hazard {
+          0% {
+            r: 38;
+            opacity: 0.9;
+            stroke-width: 1.5;
+          }
+          100% {
+            r: 150;
+            opacity: 0;
+            stroke-width: 3.5;
+          }
+        }
         .glowing-evac-path {
-          animation: march 0.8s linear infinite;
-          filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.85));
+          animation: march 0.8s linear infinite, pulse-opacity 1.5s ease-in-out infinite;
+        }
+        .expanding-hazard-circle {
+          animation: expand-hazard 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+          pointer-events: none;
         }
         .hazard-corridor-alert {
           animation: march 1.6s linear infinite;
@@ -227,6 +254,19 @@ function FloorLayoutSchematic({ graph, workers, gasLevel, systemStatus, safeRout
                   strokeWidth="1"
                   opacity="0.3"
                   className="node-pulse-ring"
+                />
+              )}
+
+              {/* Expanding Hazard Radius (Demo Drama) */}
+              {node.id === 4 && systemStatus === "EVACUATING" && (
+                <circle
+                  cx={node.x}
+                  cy={node.y}
+                  r="38"
+                  fill="none"
+                  stroke="#f43f5e"
+                  strokeWidth="1.5"
+                  className="expanding-hazard-circle"
                 />
               )}
 
