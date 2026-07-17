@@ -240,6 +240,13 @@ async def reset_demo(db: AsyncSession = Depends(get_db)):
     await db.execute(
         update(Permit).where(Permit.status == "active").values(status="revoked")
     )
+    
+    # 2. Mark any active/unresolved incidents in the database as resolved
+    # This prevents incidents from staying in the "unresolved" state in the ledger
+    now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+    await db.execute(
+        update(Incident).where(Incident.resolved_at == None).values(resolved_at=now)
+    )
     await db.commit()
     
     # 2. Reset in-memory telemetry state and simulator values
