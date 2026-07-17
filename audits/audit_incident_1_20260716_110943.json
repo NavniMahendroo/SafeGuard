@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-07-16T11:09:43.984174+00:00",
+  "incident_id": 1,
+  "trigger_reason": "OISD-STD-137",
+  "gas_level": 12.22,
+  "temperature": 29.3,
+  "pressure": 1.58,
+  "active_permits": [
+    {
+      "id": 7,
+      "type": "Hot Work",
+      "zone": "Gas Storage Zone",
+      "issued_at": "2026-07-16T11:08:40.528596"
+    }
+  ],
+  "workers": [
+    {
+      "id": "W1",
+      "node": "Gas Storage Zone",
+      "x": 480,
+      "y": 300,
+      "status": "evacuating"
+    },
+    {
+      "id": "W2",
+      "node": "Assembly Line B",
+      "x": 240,
+      "y": 420,
+      "status": "evacuating"
+    },
+    {
+      "id": "W3",
+      "node": "Assembly Line B",
+      "x": 240,
+      "y": 420,
+      "status": "evacuating"
+    }
+  ],
+  "triggered_rules": [
+    {
+      "triggered": true,
+      "rule_id": "OISD-STD-137",
+      "standard": "OISD-STD-137",
+      "severity": "CRITICAL",
+      "action": "Evacuate immediately"
+    }
+  ],
+  "rag_context": [
+    {
+      "id": "FACTORY-ACT-SEC-36",
+      "text": "Factory Act Section 36: Precautions against dangerous fumes. Sub-section 2: Confined Space Entry Controls. Restricts entry and regulates overcrowding inside vessels, tanks, or pits where dangerous gas, fume, or dust is likely to present asphyxiation risks.",
+      "action": "Implement confined space entry permit system, limit occupancy to authorized personnel, ensure ventilation and gas monitoring.",
+      "similarity_score": 0.39489641785621643
+    },
+    {
+      "id": "DGMS-THERMAL-STRESS",
+      "text": "DGMS Technical Circular: Heat Stress Management in Industrial Spaces. Clause 3: Workplace Temperature and Thermal Stress Standards. Prescribes work limitations and requires special equipment configurations when work is authorized in areas exceeding 65.0\u00b0C.",
+      "action": "Implement thermal monitoring, provide cooling equipment, enforce work-rest cycles, suspend operations above thermal limits.",
+      "similarity_score": 0.38153278827667236
+    }
+  ],
+  "anomaly_score": 0.03146703923682104,
+  "lead_time_at_trigger": 0.0
+}

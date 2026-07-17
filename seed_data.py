@@ -2,7 +2,7 @@ import datetime
 import random
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from main import Base, WorkerModel, PermitLog
+from app.models import Base, WorkerModel, PermitLog
 
 DATABASE_URL = "sqlite:///./safeguard.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})

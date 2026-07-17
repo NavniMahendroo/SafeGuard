@@ -1,0 +1,274 @@
+{
+  "timestamp": "2026-06-25T09:07:49.320229+00:00",
+  "incident_id": 8,
+  "trigger_reason": "Asphyxiation risk: Gas level (9.3%) exceeded limit (8.0%) in overcrowded Confined Space (22 workers).",
+  "gas_level": 9.3,
+  "temperature": 25.0,
+  "active_permits": [
+    {
+      "zone_id": 4,
+      "permit_type": "Hot Work",
+      "zone_name": "Gas Storage Zone"
+    },
+    {
+      "zone_id": 5,
+      "permit_type": "Hot Work",
+      "zone_name": "Hot Work Zone"
+    },
+    {
+      "zone_id": 3,
+      "permit_type": "Confined Space Entry",
+      "zone_name": "Assembly Line B"
+    }
+  ],
+  "workers": [
+    {
+      "id": "W-101",
+      "name": "Rajesh Kumar",
+      "role": "Pipefitter",
+      "current_node": 2,
+      "coords": [
+        340.0,
+        300.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-102",
+      "name": "Ananya Sharma",
+      "role": "Electrical Technician",
+      "current_node": 4,
+      "coords": [
+        520.0,
+        300.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-103",
+      "name": "Marcus Aurelius",
+      "role": "Safety Engineer",
+      "current_node": 6,
+      "coords": [
+        866.7179882264862,
+        477.8119921509908
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-104",
+      "name": "Kenji Sato",
+      "role": "Process Operator",
+      "current_node": 1,
+      "coords": [
+        184.8528137423857,
+        415.1471862576143
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-105",
+      "name": "Elena Rostova",
+      "role": "Maintenance Supervisor",
+      "current_node": 5,
+      "coords": [
+        899.538105961624,
+        500.30792935891736
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-106",
+      "name": "Carlos Mendez",
+      "role": "Welding Inspector",
+      "current_node": 6,
+      "coords": [
+        600.461894038376,
+        300.30792935891736
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-107",
+      "name": "Sarah Jenkins",
+      "role": "Instrument Specialist",
+      "current_node": 6,
+      "coords": [
+        900,
+        500
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-108",
+      "name": "David Vance",
+      "role": "Chemical Engineer",
+      "current_node": 2,
+      "coords": [
+        380.0,
+        300.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-109",
+      "name": "Amina Diallo",
+      "role": "HVAC Technician",
+      "current_node": 3,
+      "coords": [
+        300.0,
+        660.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-110",
+      "name": "Li Wei",
+      "role": "Control Systems Lead",
+      "current_node": 2,
+      "coords": [
+        300.0,
+        420.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-111",
+      "name": "Vikram Singh",
+      "role": "Mechanical Tech",
+      "current_node": 3,
+      "coords": [
+        300,
+        700
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-112",
+      "name": "Sophie Dubois",
+      "role": "HSE Coordinator",
+      "current_node": 3,
+      "coords": [
+        340.0,
+        700.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-113",
+      "name": "John Miller",
+      "role": "Millwright",
+      "current_node": 2,
+      "coords": [
+        300.0,
+        340.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-114",
+      "name": "Hiroshi Tanaka",
+      "role": "Operations Manager",
+      "current_node": 6,
+      "coords": [
+        600.461894038376,
+        300.30792935891736
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-115",
+      "name": "Maria Rossi",
+      "role": "Scaffolder",
+      "current_node": 2,
+      "coords": [
+        420.0,
+        300.0
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-116",
+      "name": "Pavel Petrov",
+      "role": "Valves Specialist",
+      "current_node": 3,
+      "coords": [
+        215.1471862576143,
+        615.1471862576143
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-117",
+      "name": "Fatima Al-Sayed",
+      "role": "Analyst",
+      "current_node": 3,
+      "coords": [
+        215.1471862576143,
+        615.1471862576143
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-118",
+      "name": "Hans Mueller",
+      "role": "Boiler Operator",
+      "current_node": 2,
+      "coords": [
+        215.1471862576143,
+        384.8528137423857
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-119",
+      "name": "Chao Wang",
+      "role": "Project Engineer",
+      "current_node": 6,
+      "coords": [
+        600.461894038376,
+        699.6920706410826
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-120",
+      "name": "Lucia Santos",
+      "role": "Lab Technician",
+      "current_node": 6,
+      "coords": [
+        600.461894038376,
+        699.6920706410826
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-121",
+      "name": "Ahmed Mansour",
+      "role": "Turbine Tech",
+      "current_node": 1,
+      "coords": [
+        156.5685424949238,
+        443.4314575050762
+      ],
+      "status": "Safe"
+    },
+    {
+      "id": "W-122",
+      "name": "Yuki Sato",
+      "role": "Inspector",
+      "current_node": 2,
+      "coords": [
+        380.0,
+        300.0
+      ],
+      "status": "Safe"
+    }
+  ],
+  "regulatory_context": {
+    "standard_id": "Factory Act Section 36",
+    "title": "Precautions against dangerous fumes",
+    "section": "Sub-section 2 - Confined Space Entry Controls",
+    "description": "Restricts entry and regulates overcrowding inside vessels, tanks, or pits where dangerous gas, fume, or dust is likely to present asphyxiation risks."
+  }
+}

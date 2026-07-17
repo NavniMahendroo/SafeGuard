@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSafetyStore } from './store';
+import { useStore } from './store';
 import FloorLayoutSchematic from './FloorLayoutSchematic';
 import {
   Shield,
@@ -10,476 +10,570 @@ import {
   FileText,
   Clock,
   Plus,
-  RefreshCw,
   AlertTriangle,
   CheckCircle,
   MapPin,
   ArrowLeft,
-  Server
+  Server,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 
 function CommandCenter({ onBack }) {
   const {
     connected,
-    timestamp,
-    systemStatus,
-    gasLevel,
-    activePermits,
+    status,
+    telemetry,
+    lead_time_minutes,
     workers,
-    graph,
-    safeRoute,
-    permitHistory,
-    incidentHistory,
+    active_permits,
+    triggered_rules,
+    evacuation_paths,
+    nodes,
+    cooldown_seconds_remaining,
     connect,
     disconnect,
-    createPermit,
-    closePermit,
-    fetchPermits,
-    fetchIncidents,
-    resolveIncident
-  } = useSafetyStore();
+    issuePermit,
+    revokePermit,
+    resolveIncident,
+    apiHost
+  } = useStore();
 
   const [selectedZone, setSelectedZone] = useState('');
   const [permitType, setPermitType] = useState('Hot Work');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [audioCtx, setAudioCtx] = useState(null);
 
-  // Initialize store connection on mount
+  // RAG Compliance Audit States
+  const [incidents, setIncidents] = useState([]);
+  const [activeAudit, setActiveAudit] = useState(null);
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+
+  const fetchIncidents = async () => {
+    try {
+      const response = await fetch(`http://${apiHost}/api/incidents`);
+      if (response.ok) {
+        const data = await response.json();
+        setIncidents(data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch incidents:", e);
+    }
+  };
+
+  const handleViewAudit = async (incidentId) => {
+    try {
+      const response = await fetch(`http://${apiHost}/api/audit/${incidentId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setActiveAudit(data);
+        setIsAuditModalOpen(true);
+      } else {
+        alert("RAG Audit context not generated yet or not found for this incident.");
+      }
+    } catch (e) {
+      console.error("Failed to fetch audit snapshot:", e);
+      alert("Error fetching RAG Audit details.");
+    }
+  };
+
+  useEffect(() => {
+    fetchIncidents();
+  }, [status]);
+
+  // Initialize AudioContext on first toggle
+  const toggleMute = () => {
+    if (!audioCtx) {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      setAudioCtx(ctx);
+    }
+    setIsMuted(!isMuted);
+  };
+
+  useEffect(() => {
+    if (status !== 'EVACUATING' || isMuted || !audioCtx) return;
+
+    let intervalId;
+    const playSiren = () => {
+      try {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        // Warning siren frequency sweep (880Hz down to 440Hz)
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.8);
+        
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime); // low volume
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
+      } catch (e) {
+        console.error("Audio playback error:", e);
+      }
+    };
+
+    // Play immediately and then every 1.5 seconds
+    playSiren();
+    intervalId = setInterval(playSiren, 1500);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [status, isMuted, audioCtx]);
+
   useEffect(() => {
     connect();
     return () => disconnect();
   }, [connect, disconnect]);
 
-  const handleRefresh = () => {
-    fetchPermits();
-    fetchIncidents();
-  };
-
   const handleCreatePermit = async (e) => {
     e.preventDefault();
     if (!selectedZone) return;
     setIsSubmitting(true);
-
-    const zoneId = parseInt(selectedZone, 10);
-    const zoneName = graph.nodes?.find(n => n.id === zoneId)?.name || `Zone ${zoneId}`;
-
-    await createPermit(zoneId, zoneName, permitType);
-    setSelectedZone('');
+    try {
+      await issuePermit(permitType, selectedZone);
+      setSelectedZone('');
+    } catch (error) {
+      console.error('Failed to issue permit:', error);
+    }
     setIsSubmitting(false);
   };
 
-  // Status helper mapping
-  const getStatusBadge = () => {
-    switch (systemStatus) {
-      case 'EVACUATING':
-        return (
-          <span className="flex items-center gap-1.5 px-3 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-450 animate-pulse text-xs font-black uppercase tracking-wider rounded-md">
-            <AlertTriangle className="w-4.5 h-4.5 text-rose-450" />
-            CRITICAL EVACUATION
-          </span>
-        );
-      case 'WARNING':
-        return (
-          <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 animate-pulse text-xs font-black uppercase tracking-wider rounded-md">
-            <AlertTriangle className="w-4.5 h-4.5 text-amber-400" />
-            ZONE WARNING
-          </span>
-        );
-      default:
-        return (
-          <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-450 text-xs font-black uppercase tracking-wider rounded-md">
-            <CheckCircle className="w-4.5 h-4.5 text-emerald-400" />
-            SYSTEM SAFE
-          </span>
-        );
+  const handleRevokePermit = async (permitId) => {
+    try {
+      await revokePermit(permitId);
+    } catch (error) {
+      console.error('Failed to revoke permit:', error);
     }
   };
 
-  const activeCount = workers.filter(w => w.status !== 'Evacuated').length;
-  const evacuatedCount = workers.filter(w => w.status === 'Evacuated').length;
+  const handleResolve = async () => {
+    try {
+      await resolveIncident();
+    } catch (error) {
+      console.error('Failed to resolve incident:', error);
+    }
+  };
+
+  const gasLevel = telemetry?.gas_level || 4.0;
+  const temperature = telemetry?.temperature || 32.0;
+  const pressure = telemetry?.pressure || 1.8;
+
+  const zones = [
+    "Entry Gate",
+    "Assembly Line A",
+    "Assembly Line B",
+    "Gas Storage Zone",
+    "Control Room"
+  ];
 
   return (
-    <div className="min-h-screen bg-[#060814] text-slate-200 flex flex-col font-sans select-none">
-      
-      {/* 1. HEADER PANEL */}
-      <header className="border-b border-slate-900 bg-[#0b0e1a]/95 backdrop-blur-md sticky top-0 z-40 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-        
+    <div className="min-h-screen bg-bg text-text flex flex-col font-sans select-none relative">
+      {status === 'EVACUATING' && (
+        <div className="absolute inset-0 pointer-events-none z-50 border-8 border-accent-rose/20 animate-pulse" style={{ boxShadow: 'inset 0 0 80px rgba(244, 63, 94, 0.2)' }} />
+      )}
+      <header className="border-b border-border bg-bg-card/95 backdrop-blur-md sticky top-0 z-40 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4 w-full md:w-auto">
-          {/* Back to Hero CTA */}
-          <button 
-            onClick={onBack}
-            className="p-2 hover:bg-slate-900 rounded-lg border border-slate-800 transition text-slate-400 hover:text-slate-200"
-            title="Return to Welcome Screen"
-          >
+          <button onClick={onBack} className="p-2 hover:bg-bg-panel rounded-lg border border-border transition text-text-muted hover:text-text">
             <ArrowLeft className="w-4.5 h-4.5" />
           </button>
-          
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
-              <Shield className="w-6 h-6 text-cyan-400" />
+            <div className="p-2 bg-accent-cyan/10 rounded-lg border border-accent-cyan/30">
+              <Shield className="w-6 h-6 text-accent-cyan" />
             </div>
             <div>
-              <h1 className="text-lg font-black tracking-widest text-slate-100 uppercase flex items-center gap-2">
-                SafeGuard <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 tracking-wider">COMMAND CENTRE</span>
+              <h1 className="text-lg font-black tracking-widest text-text uppercase">
+                SafeGuard <span className="text-xs font-bold px-2 py-0.5 rounded bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20">COMMAND CENTER</span>
               </h1>
-              <p className="text-[10px] text-slate-500 font-mono tracking-wider">FACILITY GRAPH AUTOMATED RISK RESPONSE MATRIX</p>
+              <p className="text-[10px] text-text-muted font-mono tracking-wider">FACILITY GRAPH AUTOMATED RISK RESPONSE MATRIX</p>
             </div>
           </div>
         </div>
 
-        {/* Global state gauges in Header */}
         <div className="flex flex-wrap items-center gap-4 w-full md:w-auto justify-end">
-          
-          {/* Live Stats */}
-          <div className="flex items-center gap-5 bg-slate-950/60 px-4 py-2 rounded-lg border border-slate-900 text-xs font-mono">
+          <div className="flex items-center gap-5 bg-bg-panel/60 px-4 py-2 rounded-lg border border-border text-xs font-mono">
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-cyan-400" />
-              <span className="text-slate-500">WORKERS:</span>
-              <span className="font-bold text-slate-200">{activeCount} active / {evacuatedCount} evacuated</span>
+              <Users className="w-4 h-4 text-accent-cyan" />
+              <span className="text-text-muted">WORKERS:</span>
+              <span className="font-bold text-text">{workers.length}</span>
             </div>
-            <div className="h-4 w-px bg-slate-900" />
+            <div className="h-4 w-px bg-border" />
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-cyan-400" />
-              <span className="text-slate-500">TELEMETRY STATS:</span>
-              {getStatusBadge()}
-              
-              {systemStatus === 'EVACUATING' && (
-                <button
-                  onClick={resolveIncident}
-                  className="ml-2 px-2 py-0.5 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white text-[9px] font-black uppercase tracking-wider rounded border border-rose-500/30 transition shadow-md animate-pulse"
-                >
+              <Activity className="w-4 h-4 text-accent-cyan" />
+              <span className="text-text-muted">STATUS:</span>
+              {status === 'EVACUATING' ? (
+                <span className="flex items-center gap-1.5 px-2 py-0.5 bg-accent-rose/10 border border-accent-rose/30 text-accent-rose animate-pulse text-xs font-black uppercase rounded">
+                  <AlertTriangle className="w-3 h-3" /> CRITICAL
+                </span>
+              ) : status === 'COOLDOWN' ? (
+                <span className="flex items-center gap-1.5 px-2 py-0.5 bg-accent-amber/10 border border-accent-amber/30 text-accent-amber text-xs font-black uppercase rounded">
+                  <Clock className="w-3 h-3" /> COOLDOWN {cooldown_seconds_remaining}s
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 px-2 py-0.5 bg-accent-emerald/10 border border-accent-emerald/30 text-accent-emerald text-xs font-black uppercase rounded">
+                  <CheckCircle className="w-3 h-3" /> NORMAL
+                </span>
+              )}
+              {status === 'EVACUATING' && (
+                <button onClick={handleResolve} className="ml-2 px-2 py-0.5 bg-accent-rose hover:bg-accent-rose/80 text-white text-[9px] font-black uppercase rounded border border-accent-rose/30 transition">
                   Resolve
                 </button>
               )}
             </div>
           </div>
 
-          {/* Web Socket Pulse */}
+          <button 
+            onClick={toggleMute} 
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] font-mono font-bold tracking-wider transition ${
+              isMuted 
+                ? 'bg-bg-panel/40 text-text-muted border-border hover:bg-bg-panel' 
+                : 'bg-accent-amber/10 text-accent-amber border-accent-amber/20 hover:bg-accent-amber/20'
+            }`}
+          >
+            {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 animate-bounce" />}
+            {isMuted ? 'AUDIO: OFF' : 'AUDIO: ON'}
+          </button>
+
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] font-mono font-bold tracking-wider ${
-            connected
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-              : 'bg-rose-500/10 text-rose-450 border-rose-500/20 animate-pulse'
+            connected ? 'bg-accent-emerald/10 text-accent-emerald border-accent-emerald/20' : 'bg-accent-rose/10 text-accent-rose border-accent-rose/20 animate-pulse'
           }`}>
-            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-450 animate-ping'}`} />
-            {connected ? 'WS FEED: ESTABLISHED' : 'WS FEED: DISCONNECTED'}
+            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-accent-emerald animate-pulse' : 'bg-accent-rose animate-ping'}`} />
+            {connected ? 'WS: CONNECTED' : 'WS: DISCONNECTED'}
           </div>
-
         </div>
-
       </header>
 
-      {/* 2. DENSE DASHBOARD GRID */}
       <div className="flex-1 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-y-auto max-w-[1600px] mx-auto w-full">
-        
-        {/* LEFT COLUMN: SVG Floor Layout Schematic */}
         <section className="lg:col-span-2 flex flex-col gap-6">
-          
-          <div className="bg-[#0b0e1a] rounded-xl border border-slate-900 p-5 flex flex-col h-full shadow-md relative">
-            
-            {/* Schematic controls */}
-            <div className="flex justify-between items-center mb-4 border-b border-slate-900 pb-3">
+          <div className="bg-bg-card rounded-xl border border-border p-5 flex flex-col h-full">
+            <div className="flex justify-between items-center mb-4 border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <Server className="w-4.5 h-4.5 text-cyan-400 animate-pulse" />
-                <h2 className="text-xs font-black uppercase tracking-widest text-slate-350">Live Facility Node Topology</h2>
+                <Server className="w-4.5 h-4.5 text-accent-cyan animate-pulse" />
+                <h2 className="text-xs font-black uppercase tracking-widest text-text">Live Facility Node Topology</h2>
               </div>
-              <div className="text-[10px] font-mono text-slate-500 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
-                REAL-TIME GRAPH ROUTING MODEL
+              <div className="text-[10px] font-mono text-text-muted flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent-cyan animate-ping" />
+                REAL-TIME GRAPH ROUTING
               </div>
             </div>
 
-            {/* Layout Canvas */}
             <div className="flex-1 min-h-[500px]">
               <FloorLayoutSchematic
-                graph={graph}
+                nodes={nodes}
                 workers={workers}
-                gasLevel={gasLevel}
-                systemStatus={systemStatus}
-                safeRoute={safeRoute}
-                activePermits={activePermits}
+                status={status}
+                evacuation_paths={evacuation_paths}
+                active_permits={active_permits}
+                telemetry={telemetry}
               />
             </div>
 
-            {/* Layout Map Keys */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-950/40 p-3 rounded-lg border border-slate-900 text-[10px] font-mono text-slate-450 mt-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-bg-panel/40 p-3 rounded-lg border border-border text-[10px] font-mono text-text-muted mt-4">
               <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 rounded bg-cyan-950 border border-cyan-500 inline-block" />
-                <span>EXITS (1 & 6)</span>
+                <span className="w-3.5 h-3.5 rounded bg-accent-cyan/20 border border-accent-cyan inline-block" />
+                <span>EXITS</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 rounded bg-slate-950 border border-amber-500 inline-block" />
-                <span>PERMIT ISSUED ZONE</span>
+                <span className="w-3.5 h-3.5 rounded bg-accent-amber/20 border border-accent-amber inline-block" />
+                <span>PERMIT ACTIVE</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 rounded border border-emerald-500 bg-emerald-500/20 inline-block" />
-                <span>DYNAMIC A* ESCAPE PATH</span>
+                <span className="w-3.5 h-3.5 rounded border border-accent-emerald bg-accent-emerald/20 inline-block" />
+                <span>A* EVAC PATH</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 rounded-full bg-cyan-400 animate-ping inline-block" />
-                <span>WORKER LOCATOR BEACON</span>
+                <span className="w-3.5 h-3.5 rounded-full bg-accent-cyan animate-ping inline-block" />
+                <span>WORKER BEACON</span>
               </div>
             </div>
-
           </div>
 
+          {/* Regulatory Audit Log (RAG) Card */}
+          <div className="bg-bg-card rounded-xl border border-border p-5 flex flex-col gap-4">
+            <div className="border-b border-border pb-3 flex justify-between items-center">
+              <div>
+                <h2 className="text-xs font-black uppercase tracking-widest text-text flex items-center gap-2">
+                  <FileText className="w-4.5 h-4.5 text-accent-cyan" />
+                  ⚖️ Regulatory Audit Log & RAG Compliance
+                </h2>
+                <p className="text-[10px] text-text-muted font-mono mt-0.5">COMPLIANCE ANALYSIS RETRIEVED FROM SAFETY DATABASES</p>
+              </div>
+              <button 
+                onClick={fetchIncidents} 
+                className="px-2.5 py-1 rounded bg-bg-panel border border-border hover:bg-border text-[10px] font-mono text-text transition"
+              >
+                REFRESH LOGS
+              </button>
+            </div>
+
+            {incidents.length === 0 ? (
+              <div className="text-[10px] font-mono text-text-muted py-8 text-center border border-dashed border-border bg-bg-panel/10 rounded-lg">
+                NO HISTORICAL INCIDENTS RECORDED IN DATABASE
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1">
+                {incidents.map((inc) => (
+                  <div key={inc.id} className="bg-bg-panel/40 p-3.5 rounded-lg border border-border hover:border-accent-cyan/30 transition flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 text-[9px] font-black uppercase rounded ${
+                          inc.severity === 'CRITICAL' ? 'bg-accent-rose/10 text-accent-rose border border-accent-rose/20' : 'bg-accent-amber/10 text-accent-amber border border-accent-amber/20'
+                        }`}>
+                          {inc.severity}
+                        </span>
+                        <span className="font-mono text-text-muted text-[10px]">ID: #{inc.id}</span>
+                        <span className="text-text-muted font-mono text-[10px]">•</span>
+                        <span className="text-text-muted font-mono text-[10px]">{new Date(inc.timestamp).toLocaleString()}</span>
+                      </div>
+                      <p className="font-bold text-text">Trigger: {inc.rule_id}</p>
+                      <p className="text-[10px] text-text-muted font-mono">
+                        Telemetry: Gas {inc.gas_level.toFixed(2)}% | Temp {inc.temperature.toFixed(1)}°C | Workers Affected: {inc.workers_affected}
+                      </p>
+                      {inc.resolved_at ? (
+                        <p className="text-[9px] font-mono text-accent-emerald flex items-center gap-1">
+                          ✓ RESOLVED AT: {new Date(inc.resolved_at).toLocaleString()}
+                        </p>
+                      ) : (
+                        <p className="text-[9px] font-mono text-accent-rose animate-pulse">
+                          ⚠️ ACTIVE UNRESOLVED INCIDENT
+                        </p>
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => handleViewAudit(inc.id)}
+                      className="self-start md:self-center px-3 py-1.5 bg-accent-cyan/10 hover:bg-accent-cyan hover:text-bg text-accent-cyan text-[10px] font-bold uppercase tracking-wider rounded-lg border border-accent-cyan/20 transition"
+                    >
+                      VIEW RAG SAFETY CLAUSES
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
 
-        {/* RIGHT COLUMN: Sensor Feed & Work Permit Controls */}
         <section className="flex flex-col gap-6">
-
-          {/* CRITICAL WARNING BANNER IF EVACUATING */}
-          {systemStatus === 'EVACUATING' && (
-            <div className="bg-rose-950/80 border-2 border-rose-600 rounded-xl p-5 shadow-lg shadow-rose-950/20 text-rose-250 animate-pulse flex flex-col gap-3">
+          {status === 'EVACUATING' && (
+            <div className="bg-accent-rose/10 border-2 border-accent-rose rounded-xl p-5 shadow-lg flex flex-col gap-3 animate-pulse">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-rose-600 rounded-full text-slate-900">
+                <div className="p-2 bg-accent-rose rounded-full text-bg">
                   <AlertTriangle className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black tracking-wider uppercase text-rose-50">CRITICAL SAFETY ALERT</h3>
-                  <p className="text-[10px] text-rose-300 font-semibold font-mono">COMPOUND HAZARD EVACUATION ACTIVE</p>
+                  <h3 className="text-sm font-black tracking-wider uppercase text-text">CRITICAL SAFETY ALERT</h3>
+                  <p className="text-[10px] text-accent-rose font-semibold font-mono">COMPOUND HAZARD EVACUATION ACTIVE</p>
                 </div>
               </div>
-              
-              <div className="bg-rose-900/30 p-3 rounded border border-rose-800/40 text-[10px] leading-relaxed font-mono">
-                <strong>STATUS:</strong> Gas Storage Area (Node 4) telemetry exceeds safety threshold with active Hot Work. Dynamic A* evacuation routing coordinates are online.
-              </div>
-
-              <button
-                onClick={resolveIncident}
-                className="w-full py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-widest rounded-lg border border-rose-450/30 transition shadow-md"
-              >
-                Resolve Incident & Reset Alert
+              {triggered_rules.length > 0 && (
+                <div className="bg-accent-rose/20 p-3 rounded border border-accent-rose/30">
+                  {triggered_rules.map((rule, idx) => (
+                    <div key={idx} className="text-[10px] font-mono mb-1">
+                      <strong>{rule.rule_id}:</strong> {rule.action}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button onClick={handleResolve} className="w-full py-2 bg-accent-rose hover:bg-accent-rose/80 text-white font-bold text-xs uppercase tracking-widest rounded-lg border border-accent-rose/30 transition">
+                Resolve Incident
               </button>
             </div>
           )}
 
-          {/* TELEMETRY FEED (MIDDLE RIGHT PANEL) */}
-          <div className="bg-[#0b0e1a] rounded-xl border border-slate-900 p-5 shadow-md flex flex-col gap-4">
-            
-            <div className="border-b border-slate-900 pb-3">
-              <h2 className="text-xs font-black uppercase tracking-widest text-slate-350 flex items-center gap-2">
-                <Radio className="w-4.5 h-4.5 text-cyan-400 animate-pulse" />
+          {lead_time_minutes !== null && status === 'NORMAL' && (
+            <div className="bg-accent-amber/10 border border-accent-amber/30 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-4 h-4 text-accent-amber" />
+                <h3 className="text-xs font-black uppercase text-accent-amber">Lead Time Warning</h3>
+              </div>
+              <p className="text-lg font-black font-mono text-accent-amber">
+                ⚠ Critical threshold in ~{lead_time_minutes.toFixed(1)} min
+              </p>
+            </div>
+          )}
+
+          <div className="bg-bg-card rounded-xl border border-border p-5 flex flex-col gap-4">
+            <div className="border-b border-border pb-3">
+              <h2 className="text-xs font-black uppercase tracking-widest text-text flex items-center gap-2">
+                <Radio className="w-4.5 h-4.5 text-accent-cyan animate-pulse" />
                 Live Sensor Telemetry
               </h2>
-              <p className="text-[10px] text-slate-500 font-mono mt-0.5">HIGH-VELOCITY ENVIRONMENT CAPTURE LOG</p>
+              <p className="text-[10px] text-text-muted font-mono mt-0.5">HIGH-VELOCITY ENVIRONMENT CAPTURE</p>
             </div>
 
-            {/* Telemetry Gauge Display */}
-            <div className={`p-5 rounded-lg border transition-all duration-350 ${
-              gasLevel >= 12.0
-                ? 'bg-rose-500/10 border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.15)] animate-pulse'
-                : gasLevel >= 6.0
-                ? 'bg-amber-500/5 border-amber-500/25'
-                : 'bg-slate-950/60 border-slate-900'
+            <div className={`p-4 rounded-lg border transition-all ${
+              gasLevel >= 12.0 ? 'bg-accent-rose/10 border-accent-rose/30 animate-pulse' : gasLevel >= 8.0 ? 'bg-accent-amber/10 border-accent-amber/30' : 'bg-bg-panel/60 border-border'
             }`}>
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-xs font-bold text-slate-200">Gas Storage Area Level</h3>
-                  <p className="text-[9px] font-mono text-slate-500 mt-1">SENSOR-NODE-04 • PROBE-A</p>
-                </div>
-                <div className="text-right">
-                  <span className={`text-2xl font-black font-mono tracking-wider ${
-                    gasLevel >= 12.0 ? 'text-rose-450' : gasLevel >= 6.0 ? 'text-amber-400' : 'text-emerald-450'
-                  }`}>
-                    {gasLevel.toFixed(2)}%
-                  </span>
-                  <p className="text-[8px] font-mono text-slate-500 mt-0.5">ALERT THRESHOLD: 12.00%</p>
-                </div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-bold text-text">Gas Level</span>
+                <span className={`text-2xl font-black font-mono ${gasLevel >= 12.0 ? 'text-accent-rose' : gasLevel >= 8.0 ? 'text-accent-amber' : 'text-accent-emerald'}`}>
+                  {gasLevel.toFixed(2)}%
+                </span>
               </div>
-
-              {/* Progress bar visual indicator */}
-              <div className="w-full bg-slate-900 rounded-full h-1.5 mt-4 overflow-hidden border border-slate-950">
-                <div 
-                  className={`h-1.5 rounded-full transition-all duration-500 ${
-                    gasLevel >= 12.0 ? 'bg-rose-500' : gasLevel >= 6.0 ? 'bg-amber-500' : 'bg-emerald-500'
-                  }`}
-                  style={{ width: `${Math.min(100, (gasLevel / 15) * 100)}%` }}
-                />
+              <div className="w-full bg-bg rounded-full h-2 overflow-hidden">
+                <div className={`h-2 rounded-full transition-all ${gasLevel >= 12.0 ? 'bg-accent-rose' : gasLevel >= 8.0 ? 'bg-accent-amber' : 'bg-accent-emerald'}`} style={{ width: `${Math.min(100, (gasLevel / 15) * 100)}%` }} />
               </div>
             </div>
 
-            <div className="flex justify-between items-center text-[10px] font-mono text-slate-500 bg-slate-950/40 p-3 rounded border border-slate-900">
-              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> MATRIX TELEMETRY SYNCED</span>
-              <span>{timestamp ? new Date(timestamp).toLocaleTimeString() : 'AWAITING SYNC...'}</span>
+            <div className="p-4 rounded-lg border border-border bg-bg-panel/60">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-bold text-text">Temperature</span>
+                <span className="text-xl font-black font-mono text-accent-cyan">{temperature.toFixed(1)}°C</span>
+              </div>
+              <div className="w-full bg-bg rounded-full h-2 overflow-hidden">
+                <div className="h-2 rounded-full bg-accent-cyan transition-all" style={{ width: `${Math.min(100, (temperature / 80) * 100)}%` }} />
+              </div>
             </div>
 
+            <div className="p-4 rounded-lg border border-border bg-bg-panel/60">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-bold text-text">Pressure</span>
+                <span className="text-xl font-black font-mono text-accent-cyan">{pressure.toFixed(2)} bar</span>
+              </div>
+              <div className="w-full bg-bg rounded-full h-2 overflow-hidden">
+                <div className="h-2 rounded-full bg-accent-cyan transition-all" style={{ width: `${Math.min(100, (pressure / 4) * 100)}%` }} />
+              </div>
+            </div>
           </div>
 
-          {/* WORK PERMIT CONTROLLER (TOP RIGHT PANEL) */}
-          <div className="bg-[#0b0e1a] rounded-xl border border-slate-900 p-5 shadow-md flex flex-col gap-4">
-            
-            <div className="border-b border-slate-900 pb-3">
-              <h2 className="text-xs font-black uppercase tracking-widest text-slate-350 flex items-center gap-2">
-                <FileText className="w-4.5 h-4.5 text-cyan-400" />
+          <div className="bg-bg-card rounded-xl border border-border p-5 flex flex-col gap-4">
+            <div className="border-b border-border pb-3">
+              <h2 className="text-xs font-black uppercase tracking-widest text-text flex items-center gap-2">
+                <FileText className="w-4.5 h-4.5 text-accent-cyan" />
                 Work Permit Registry
               </h2>
-              <p className="text-[10px] text-slate-500 font-mono mt-0.5">REGISTER THERMAL HAZARD ACTIVITIES</p>
+              <p className="text-[10px] text-text-muted font-mono mt-0.5">REGISTER THERMAL HAZARD ACTIVITIES</p>
             </div>
 
-            {/* List active permits */}
             <div className="flex flex-col gap-3">
-              <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500">Active Clearances</span>
-              
-              {activePermits.length === 0 ? (
-                <div className="text-[10px] font-mono text-slate-500 py-3 text-center border border-dashed border-slate-900 bg-slate-950/30 rounded-lg">
-                  NO ACTIVE PERMITS IN CURRENT CYCLE
+              <span className="text-[9px] font-mono uppercase tracking-widest text-text-muted">Active Clearances</span>
+              {active_permits.length === 0 ? (
+                <div className="text-[10px] font-mono text-text-muted py-3 text-center border border-dashed border-border bg-bg-panel/30 rounded-lg">
+                  NO ACTIVE PERMITS
                 </div>
               ) : (
                 <div className="flex flex-col gap-2.5">
-                  {activePermits.map((permit) => {
-                    const matchingLog = permitHistory.find(
-                      h => h.zone_id === permit.zone_id && h.status === 'Active'
-                    );
-
-                    return (
-                      <div 
-                        key={`permit-${permit.zone_id}`}
-                        className="bg-slate-950/60 p-3 rounded-lg border border-slate-900 flex justify-between items-center gap-3 hover:border-slate-800 transition"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
-                          <div>
-                            <p className="text-xs font-bold text-slate-200">{permit.permit_type}</p>
-                            <p className="text-[9px] font-mono text-slate-450 mt-0.5 flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5 text-slate-500" /> {permit.zone_name} (Zone {permit.zone_id})
-                            </p>
-                          </div>
+                  {active_permits.map((permit) => (
+                    <div key={permit.id} className="bg-bg-panel/60 p-3 rounded-lg border border-border flex justify-between items-center gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <Flame className="w-4 h-4 text-accent-amber animate-pulse" />
+                        <div>
+                          <p className="text-xs font-bold text-text">{permit.type}</p>
+                          <p className="text-[9px] font-mono text-text-muted flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5" /> {permit.zone}
+                          </p>
                         </div>
-                        {matchingLog && (
-                          <button
-                            onClick={() => closePermit(matchingLog.id)}
-                            className="text-[9px] font-mono uppercase font-bold tracking-widest px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500 hover:text-white border border-rose-500/20 hover:border-rose-500 rounded transition"
-                          >
-                            REVOKE
-                          </button>
-                        )}
                       </div>
-                    );
-                  })}
+                      <button onClick={() => handleRevokePermit(permit.id)} className="text-[9px] font-mono uppercase font-bold px-2.5 py-1 bg-accent-rose/10 hover:bg-accent-rose hover:text-white border border-accent-rose/20 rounded transition">
+                        REVOKE
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Create permit form */}
-            <form onSubmit={handleCreatePermit} className="border-t border-slate-900 pt-4 mt-1 flex flex-col gap-3">
-              <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500">Authorize Facility Zone</span>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-mono text-slate-450 uppercase">Target Facility Sector</label>
-                <select
-                  value={selectedZone}
-                  onChange={(e) => setSelectedZone(e.target.value)}
-                  className="bg-slate-950 border border-slate-900 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-cyan-500 text-slate-350"
-                  required
-                >
-                  <option value="" disabled>Select sector zone...</option>
-                  {graph.nodes
-                    ?.filter(n => !n.is_exit)
-                    .map(n => (
-                      <option 
-                        key={`sel-node-${n.id}`} 
-                        value={n.id}
-                        disabled={activePermits.some(p => p.zone_id === n.id)}
-                      >
-                        {n.name} (Zone {n.id}) {activePermits.some(p => p.zone_id === n.id) ? '[BLOCKED]' : ''}
-                      </option>
-                    ))
-                  }
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-mono text-slate-450 uppercase">Clearing Activity Type</label>
-                <select
-                  value={permitType}
-                  onChange={(e) => setPermitType(e.target.value)}
-                  className="bg-slate-950 border border-slate-900 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-cyan-500 text-slate-350"
-                >
-                  <option value="Hot Work">Hot Work (Arc Welding / Torch Cutting)</option>
-                  <option value="Cold Work">Cold Work (Electrical / Structural)</option>
-                  <option value="Confined Space Entry">Confined Space Entry (Hazardous Env)</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting || !selectedZone}
-                className="w-full py-2.5 px-3 bg-cyan-500 hover:bg-cyan-400 disabled:bg-slate-950 disabled:text-slate-600 disabled:border-transparent font-bold text-xs uppercase tracking-wider rounded-lg text-slate-950 border border-cyan-400/20 transition flex items-center justify-center gap-1.5"
-              >
-                <Plus className="w-4.5 h-4.5" /> AUTHORIZE CLEARANCE
+            <form onSubmit={handleCreatePermit} className="border-t border-border pt-4 flex flex-col gap-3">
+              <span className="text-[9px] font-mono uppercase tracking-widest text-text-muted">Authorize Facility Zone</span>
+              <select value={selectedZone} onChange={(e) => setSelectedZone(e.target.value)} className="bg-bg-panel border border-border rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-accent-cyan text-text" required>
+                <option value="">Select sector zone...</option>
+                {zones.map(zone => (
+                  <option key={zone} value={zone} disabled={active_permits.some(p => p.zone === zone)}>
+                    {zone} {active_permits.some(p => p.zone === zone) ? '[BLOCKED]' : ''}
+                  </option>
+                ))}
+              </select>
+              <select value={permitType} onChange={(e) => setPermitType(e.target.value)} className="bg-bg-panel border border-border rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-accent-cyan text-text">
+                <option value="Hot Work">Hot Work</option>
+                <option value="Cold Work">Cold Work</option>
+                <option value="Confined Space">Confined Space</option>
+              </select>
+              <button type="submit" disabled={isSubmitting || !selectedZone} className="w-full py-2.5 px-3 bg-accent-cyan hover:bg-accent-cyan/80 disabled:bg-bg-panel disabled:text-text-muted font-bold text-xs uppercase tracking-wider rounded-lg text-bg border border-accent-cyan/20 transition flex items-center justify-center gap-1.5">
+                <Plus className="w-4.5 h-4.5" /> AUTHORIZE
               </button>
             </form>
-
           </div>
-
         </section>
-
       </div>
-
-      {/* 3. INCIDENT AUDIT LOGS PANEL (BOTTOM PANEL) */}
-      <footer className="px-6 pb-6 w-full max-w-[1600px] mx-auto">
-        <div className="bg-[#0b0e1a] rounded-xl border border-slate-900 p-5 shadow-md">
-          
-          <div className="flex justify-between items-center mb-4 border-b border-slate-900 pb-3">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4.5 h-4.5 text-cyan-400" />
-              <h2 className="text-xs font-black uppercase tracking-widest text-slate-350">Industrial Incident Audit Registers</h2>
-            </div>
-            <button 
-              onClick={handleRefresh}
-              className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 transition"
-            >
-              <RefreshCw className="w-3 h-3 animate-spin-hover" /> FORCE RE-SYNC LOGS
-            </button>
-          </div>
-
-          <div className="overflow-x-auto max-h-[160px] overflow-y-auto">
-            {incidentHistory.length === 0 ? (
-              <div className="text-[10px] font-mono text-slate-500 text-center py-5">
-                NO RECORDED CYCLICAL INCIDENT REPORTS
+      {/* RAG Audit Modal */}
+      {isAuditModalOpen && activeAudit && (
+        <div className="fixed inset-0 bg-bg/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-bg-card border border-border rounded-xl max-w-2xl w-full p-6 flex flex-col gap-5 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative animate-fade-in text-text">
+            <div className="flex justify-between items-center border-b border-border pb-3">
+              <div>
+                <h3 className="text-sm font-black uppercase tracking-wider text-text flex items-center gap-2">
+                  ⚖️ Compliance Audit Report: Incident #{activeAudit.incident_id}
+                </h3>
+                <p className="text-[10px] text-text-muted font-mono mt-0.5">GENERATED BY AUTOMATED REGULATORY RAG SYSTEM</p>
               </div>
-            ) : (
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-900 text-slate-500 font-mono text-[9px] uppercase tracking-wider">
-                    <th className="py-2.5 px-2">Log Index</th>
-                    <th className="py-2.5 px-2">Telemetry Timestamp</th>
-                    <th className="py-2.5 px-2">Trigger Violation Severity</th>
-                    <th className="py-2.5 px-2">Peak Environment Gas</th>
-                    <th className="py-2.5 px-2">Subject Workers</th>
-                    <th className="py-2.5 px-2 text-right">Emergency Clearance</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-900/60 font-mono text-[10px] text-slate-300">
-                  {incidentHistory.map((inc) => (
-                    <tr key={`inc-${inc.id}`} className="hover:bg-slate-950/30">
-                      <td className="py-2.5 px-2 font-bold text-cyan-400">INC-{inc.id.toString().padStart(4, '0')}</td>
-                      <td className="py-2.5 px-2 text-slate-500">{new Date(inc.timestamp).toLocaleString()}</td>
-                      <td className="py-2.5 px-2 text-slate-400 truncate max-w-[300px]" title={inc.trigger_reason}>
-                        {inc.trigger_reason}
-                      </td>
-                      <td className="py-2.5 px-2 font-black text-rose-450">{inc.gas_level.toFixed(2)}%</td>
-                      <td className="py-2.5 px-2 text-slate-400">{inc.affected_workers}</td>
-                      <td className="py-2.5 px-2 text-right">
-                        {inc.resolved_at ? (
-                          <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-450 border border-emerald-500/20 text-[9px] font-bold rounded">
-                            CLEAR / NORMAL
+              <button 
+                onClick={() => setIsAuditModalOpen(false)}
+                className="text-xs font-mono font-bold text-text-muted hover:text-text px-2 py-1 border border-border rounded hover:bg-bg-panel transition"
+              >
+                CLOSE
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4 overflow-y-auto max-h-[450px] pr-2">
+              <div className="bg-bg-panel/40 p-4 rounded-lg border border-border flex flex-col gap-2 font-mono text-[11px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-text-muted">
+                  <div>TRIGGER REASON: <span className="text-text font-bold">{activeAudit.trigger_reason}</span></div>
+                  <div>RULE TRIGGERED: <span className="text-text font-bold">{activeAudit.triggered_rules?.[0]?.rule_id}</span></div>
+                  <div>GAS LEVEL AT TRIGGER: <span className="text-text font-bold">{activeAudit.gas_level?.toFixed(2)}%</span></div>
+                  <div>TEMP AT TRIGGER: <span className="text-text font-bold">{activeAudit.temperature?.toFixed(1)}°C</span></div>
+                  <div>ANOMALY DETECTOR SCORE: <span className="text-text font-bold">{activeAudit.anomaly_score?.toFixed(4)}</span></div>
+                  <div>PREDICTED LEAD TIME: <span className="text-text font-bold">{activeAudit.lead_time_at_trigger ? `${activeAudit.lead_time_at_trigger.toFixed(1)} min` : 'N/A'}</span></div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-text-muted">Retrieved Safety Regulations (FAISS Match)</span>
+                {activeAudit.rag_context && activeAudit.rag_context.length > 0 ? (
+                  <div className="flex flex-col gap-3">
+                    {activeAudit.rag_context.map((reg, idx) => (
+                      <div key={idx} className="bg-accent-cyan/5 p-4 rounded-lg border border-accent-cyan/15 flex flex-col gap-2">
+                        <div className="flex justify-between items-center border-b border-accent-cyan/10 pb-1.5">
+                          <span className="text-xs font-bold text-accent-cyan font-mono">{reg.id}</span>
+                          <span className="text-[10px] text-text-muted font-mono">
+                            MATCH QUALITY: {(reg.similarity_score * 100).toFixed(1)}%
                           </span>
-                        ) : (
-                          <span className="px-2 py-0.5 bg-rose-500/10 text-rose-450 border border-rose-500/20 text-[9px] font-black rounded animate-pulse">
-                            ACTIVE EVACUATION
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                        </div>
+                        <p className="text-xs text-text leading-relaxed">
+                          <strong>Standard Clause:</strong> {reg.text}
+                        </p>
+                        <p className="text-xs text-accent-cyan font-mono mt-1 leading-relaxed">
+                          <strong>Mandated Compliance Action:</strong> {reg.action}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs font-mono text-text-muted text-center py-4">
+                    No relevant regulatory contexts found.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-border pt-4">
+              <button 
+                onClick={() => setIsAuditModalOpen(false)}
+                className="px-4 py-2 bg-accent-cyan text-bg hover:bg-accent-cyan/80 text-xs font-bold uppercase tracking-widest rounded-lg border border-accent-cyan/20 transition"
+              >
+                Acknowledge and Close
+              </button>
+            </div>
           </div>
-
         </div>
-      </footer>
-
+      )}
     </div>
   );
 }

@@ -1,422 +1,367 @@
 import React from 'react';
 
-function FloorLayoutSchematic({ graph, workers, gasLevel, systemStatus, safeRoute, activePermits }) {
-  // Coordinates helper mapping if graph is not loaded yet
-  const nodesMap = React.useMemo(() => {
-    const map = {};
-    if (graph && graph.nodes) {
-      graph.nodes.forEach(n => {
-        map[n.id] = { x: n.x, y: n.y, name: n.name, is_exit: n.is_exit };
-      });
-    }
-    return map;
-  }, [graph]);
-
-  // Format path coordinates for the glowing safeRoute polyline
-  const safeRoutePoints = React.useMemo(() => {
-    if (!safeRoute || safeRoute.length === 0) return '';
-    return safeRoute
-      .map(nodeId => {
-        const node = nodesMap[nodeId];
-        return node ? `${node.x},${node.y}` : '';
-      })
-      .filter(p => p !== '')
-      .join(' ');
-  }, [safeRoute, nodesMap]);
-
-  if (!graph || !graph.nodes || graph.nodes.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-slate-500 py-20">
-        <div className="w-8 h-8 rounded-full border-2 border-slate-700 border-t-cyan-400 animate-spin mb-4" />
-        <p className="text-xs font-mono tracking-wider">AWAITING SYSTEM GRAPH SCHEMATIC...</p>
-      </div>
-    );
-  }
-
-  // Get indicator colors based on Gas Storage telemetry (Node 4)
-  const getGasIndicatorColors = () => {
-    if (gasLevel < 6.0) {
-      return {
-        fill: 'fill-emerald-500/10',
-        stroke: 'stroke-emerald-500',
-        glow: 'rgba(16, 185, 129, 0.4)',
-        pulsing: false
-      };
-    } else if (gasLevel < 12.0) {
-      return {
-        fill: 'fill-amber-500/15',
-        stroke: 'stroke-amber-500',
-        glow: 'rgba(245, 158, 11, 0.5)',
-        pulsing: true
-      };
-    } else {
-      return {
-        fill: 'fill-rose-500/20 animate-pulse',
-        stroke: 'stroke-rose-500',
-        glow: 'rgba(244, 63, 94, 0.8)',
-        pulsing: true
-      };
-    }
+function FloorLayoutSchematic({ nodes, workers, status, evacuation_paths, active_permits, telemetry }) {
+  // Exact node coordinates from specification
+  const nodeCoordinates = {
+    "Entry Gate": { x: 80, y: 300 },
+    "Assembly Line A": { x: 240, y: 180 },
+    "Assembly Line B": { x: 240, y: 420 },
+    "Gas Storage Zone": { x: 480, y: 300 },
+    "Control Room": { x: 640, y: 180 },
+    "Exit North": { x: 720, y: 80 },
+    "Exit South": { x: 720, y: 520 }
   };
 
-  const gasColors = getGasIndicatorColors();
+  // Format evacuation path points for polyline
+  const evacuationPathPoints = React.useMemo(() => {
+    const points = [];
+    Object.values(evacuation_paths).forEach(path => {
+      path.forEach(nodeId => {
+        const coords = nodeCoordinates[nodeId];
+        if (coords) points.push(`${coords.x},${coords.y}`);
+      });
+    });
+    return points.join(' ');
+  }, [evacuation_paths]);
+
+  // Group workers by node to prevent overlapping
+  const workersByNode = React.useMemo(() => {
+    const groups = {};
+    workers.forEach(w => {
+      if (!groups[w.node]) groups[w.node] = [];
+      groups[w.node].push(w);
+    });
+    return groups;
+  }, [workers]);
+
+  // Calculate worker positions inside the card (bottom half) to avoid overlapping text
+  const getWorkerPosition = (worker) => {
+    const nodeCoords = nodeCoordinates[worker.node];
+    if (!nodeCoords) return { x: worker.x, y: worker.y };
+
+    const nodeWorkers = workersByNode[worker.node] || [];
+    const idx = nodeWorkers.findIndex(w => w.id === worker.id);
+    const total = nodeWorkers.length;
+
+    // Cluster center is shifted downward inside the card (leaving the top half for labels)
+    const centerY = nodeCoords.y + 16;
+
+    if (total <= 1) {
+      return { x: nodeCoords.x, y: centerY };
+    }
+
+    // Distribute around center in a small circular configuration
+    const angle = (idx * 2 * Math.PI) / total;
+    const radius = 12; // tight clustering radius
+    return {
+      x: nodeCoords.x + radius * Math.cos(angle),
+      y: centerY + radius * Math.sin(angle)
+    };
+  };
 
   return (
-    <div className="relative w-full h-full bg-[#070b13] rounded-lg border border-slate-900 overflow-hidden flex items-center justify-center p-4">
-      {/* Self-contained CSS for path marching animations, glows, and expanding hazard radii */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes march {
-          to {
-            stroke-dashoffset: -20;
+    <div className="relative w-full h-full bg-bg rounded-xl border border-border overflow-hidden shadow-2xl">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes march {
+            to { stroke-dashoffset: -20; }
           }
-        }
-        @keyframes pulse-opacity {
-          0%, 100% {
-            opacity: 0.95;
-            stroke-width: 8;
-            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.8));
+          @keyframes pulse-danger {
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8)); }
+            50% { opacity: 0.5; filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.2)); }
           }
-          50% {
-            opacity: 0.6;
-            stroke-width: 10;
-            filter: drop-shadow(0 0 18px rgba(16, 185, 129, 0.95));
+          @keyframes expand-hazard {
+            0% { r: 20; opacity: 0.8; }
+            100% { r: 90; opacity: 0; }
           }
-        }
-        @keyframes expand-hazard {
-          0% {
-            r: 38;
-            opacity: 0.9;
-            stroke-width: 1.5;
+          @keyframes beacon-pulse {
+            0% { r: 5; opacity: 0.9; }
+            100% { r: 18; opacity: 0; }
           }
-          100% {
-            r: 150;
-            opacity: 0;
-            stroke-width: 3.5;
+          .evac-path {
+            animation: march 0.8s linear infinite;
           }
-        }
-        .glowing-evac-path {
-          animation: march 0.8s linear infinite, pulse-opacity 1.5s ease-in-out infinite;
-        }
-        .expanding-hazard-circle {
-          animation: expand-hazard 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
-          pointer-events: none;
-        }
-        .hazard-corridor-alert {
-          animation: march 1.6s linear infinite;
-          filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.6));
-        }
-        .node-pulse-ring {
-          animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-      `}} />
+          .danger-pulse {
+            animation: pulse-danger 1s ease-in-out infinite;
+          }
+          .hazard-expand {
+            animation: expand-hazard 2.5s ease-out infinite;
+          }
+          .worker-group {
+            transition: transform 2s linear;
+          }
+          .worker-beacon {
+            animation: beacon-pulse 1.6s ease-out infinite;
+          }
+        `
+      }} />
 
-      {/* Grid schematic overlay */}
-      <div 
-        className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-        style={{ 
-          backgroundImage: 'radial-gradient(#0891b2 1.5px, transparent 1.5px)', 
-          backgroundSize: '30px 30px' 
-        }} 
-      />
-
-      <svg viewBox="0 0 1000 1000" className="w-full h-full max-h-[600px] select-none p-4">
+      <svg viewBox="0 0 800 600" className="w-full h-full">
         <defs>
-          {/* SVG Glow Filter specs */}
-          <filter id="svg-glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="8" result="blur" />
+          <linearGradient id="normal-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0f172a" />
+            <stop offset="100%" stopColor="#1e293b" />
+          </linearGradient>
+          <linearGradient id="danger-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#1a0b0b" />
+            <stop offset="100%" stopColor="#3b0f0f" />
+          </linearGradient>
+          <linearGradient id="warning-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#1e150a" />
+            <stop offset="100%" stopColor="#3d2a0f" />
+          </linearGradient>
+          <linearGradient id="exit-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#062f22" />
+            <stop offset="100%" stopColor="#022c22" />
+          </linearGradient>
+
+          <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
-          <filter id="svg-glow-rose" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="12" result="blur" />
+          <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
-          <filter id="svg-glow-amber" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="10" result="blur" />
+          <filter id="glow-green" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
         </defs>
 
-        {/* 1. DRAW BASE CORRIDOR EDGES */}
-        {graph.edges.map((edge, idx) => {
-          const fromNode = nodesMap[edge.source];
-          const toNode = nodesMap[edge.target];
-          if (!fromNode || !toNode) return null;
+        {/* Level 1: Draw Corridor Tracks ( Hallways ) */}
+        <g stroke="#0f172a" strokeWidth="26" strokeLinecap="round" opacity="0.9">
+          <line x1="80" y1="300" x2="240" y2="180" />
+          <line x1="80" y1="300" x2="240" y2="420" />
+          <line x1="240" y1="180" x2="240" y2="420" />
+          <line x1="240" y1="180" x2="480" y2="300" />
+          <line x1="240" y1="420" x2="480" y2="300" />
+          <line x1="480" y1="300" x2="640" y2="180" />
+          <line x1="480" y1="300" x2="720" y2="80" />
+          <line x1="480" y1="300" x2="720" y2="520" />
+          <line x1="640" y1="180" x2="720" y2="80" />
+          <line x1="640" y1="180" x2="720" y2="520" />
+        </g>
+        <g stroke="#1e293b" strokeWidth="20" strokeLinecap="round" opacity="0.75">
+          <line x1="80" y1="300" x2="240" y2="180" />
+          <line x1="80" y1="300" x2="240" y2="420" />
+          <line x1="240" y1="180" x2="240" y2="420" />
+          <line x1="240" y1="180" x2="480" y2="300" />
+          <line x1="240" y1="420" x2="480" y2="300" />
+          <line x1="480" y1="300" x2="640" y2="180" />
+          <line x1="480" y1="300" x2="720" y2="80" />
+          <line x1="480" y1="300" x2="720" y2="520" />
+          <line x1="640" y1="180" x2="720" y2="80" />
+          <line x1="640" y1="180" x2="720" y2="520" />
+        </g>
+        <g stroke="#334155" strokeWidth="2" strokeDasharray="6 6" strokeLinecap="round" opacity="0.4">
+          <line x1="80" y1="300" x2="240" y2="180" />
+          <line x1="80" y1="300" x2="240" y2="420" />
+          <line x1="240" y1="180" x2="240" y2="420" />
+          <line x1="240" y1="180" x2="480" y2="300" />
+          <line x1="240" y1="420" x2="480" y2="300" />
+          <line x1="480" y1="300" x2="640" y2="180" />
+          <line x1="480" y1="300" x2="720" y2="80" />
+          <line x1="480" y1="300" x2="720" y2="520" />
+          <line x1="640" y1="180" x2="720" y2="80" />
+          <line x1="640" y1="180" x2="720" y2="520" />
+        </g>
 
-          // Determine corridor risk
-          const isDangerConnection = edge.source === 4 || edge.target === 4;
-          const isHazardAlert = systemStatus === "EVACUATING" && isDangerConnection;
-
-          return (
-            <line
-              key={`edge-${idx}`}
-              x1={fromNode.x}
-              y1={fromNode.y}
-              x2={toNode.x}
-              y2={toNode.y}
-              stroke={
-                isHazardAlert
-                  ? '#f43f5e'
-                  : systemStatus === "EVACUATING"
-                  ? '#10b981'
-                  : '#1e293b'
-              }
-              strokeWidth={systemStatus === "EVACUATING" ? (isDangerConnection ? '3.5' : '2.5') : '1.5'}
-              strokeDasharray={isDangerConnection && systemStatus === "EVACUATING" ? '6 4' : 'none'}
-              opacity={systemStatus === "EVACUATING" ? (isDangerConnection ? '0.7' : '0.85') : '0.5'}
-              strokeLinecap="round"
-            />
-          );
-        })}
-
-        {/* 2. DRAW EVACUATION PATH (A* safeRoute) */}
-        {systemStatus === "EVACUATING" && safeRoutePoints && (
+        {/* Level 2: Evacuation path display */}
+        {status === 'EVACUATING' && evacuationPathPoints && (
           <polyline
-            points={safeRoutePoints}
+            points={evacuationPathPoints}
             fill="none"
             stroke="#10b981"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeDasharray="15 8"
-            className="glowing-evac-path"
-            opacity="0.9"
+            strokeWidth="5"
+            strokeDasharray="12 6"
+            className="evac-path"
+            filter="url(#glow-green)"
           />
         )}
 
-        {/* 3. DRAW CORRIDOR HIGHLIGHTS FOR ACTIVE WORKER PATHS */}
-        {workers.map((worker) => {
-          if (worker.status === 'Evacuated' || !worker.path || worker.path.length === 0) return null;
+        {/* Level 3: Draw Room Cards (Nodes) */}
+        {nodes.map((node) => {
+          const coords = nodeCoordinates[node.id];
+          if (!coords) return null;
+
+          const isDanger = node.status === 'danger';
+          const isWarning = node.status === 'warning';
+          const isExit = node.id.includes('Exit');
           
-          const pathPoints = [];
-          pathPoints.push(`${worker.x},${worker.y}`);
-          worker.path.forEach(nId => {
-            const node = nodesMap[nId];
-            if (node) pathPoints.push(`${node.x},${node.y}`);
-          });
-
-          return (
-            <polyline
-              key={`worker-route-${worker.id}`}
-              points={pathPoints.join(' ')}
-              fill="none"
-              stroke={worker.color || '#06b6d4'}
-              strokeWidth="2.5"
-              strokeDasharray="4 4"
-              opacity="0.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          );
-        })}
-
-        {/* 4. DRAW FACILITY ZONES (Nodes) */}
-        {graph.nodes.map((node) => {
-          const hasActivePermit = activePermits.some(p => p.zone_id === node.id);
-
-          // Configure bubble styles based on zone status
-          let borderClass = 'stroke-slate-800';
-          let fillClass = 'fill-slate-900/90';
-          let outerGlow = '';
-          let showPulsingRing = false;
-          let ringColor = 'stroke-slate-800';
-
-          if (node.id === 4) {
-            // Gas storage zone colors are mapped to live telemetry readings
-            borderClass = gasColors.stroke;
-            fillClass = gasColors.fill;
-            outerGlow = gasLevel >= 12.0 ? 'svg-glow-rose' : gasLevel >= 6.0 ? 'svg-glow-amber' : '';
-            showPulsingRing = gasLevel >= 6.0;
-            ringColor = gasLevel >= 12.0 ? 'stroke-rose-500/30' : 'stroke-amber-500/20';
-          } else if (node.is_exit) {
-            // Exit zones glow cyan
-            borderClass = 'stroke-cyan-500';
-            fillClass = 'fill-cyan-950/80';
-            outerGlow = 'svg-glow-cyan';
-            ringColor = 'stroke-cyan-500/30';
-          } else if (hasActivePermit) {
-            // Active permit zones glow warning amber
-            borderClass = 'stroke-amber-500';
-            fillClass = 'fill-slate-950/90';
-            outerGlow = 'svg-glow-amber';
-            ringColor = 'stroke-amber-500/20';
+          let borderColor = '#0ea5e9'; // standard cyan
+          let bgGradient = 'url(#normal-grad)';
+          let statusText = 'SAFE';
+          let statusColor = '#0ea5e9';
+          
+          if (isDanger) {
+            borderColor = '#ef4444';
+            bgGradient = 'url(#danger-grad)';
+            statusText = 'HAZARD';
+            statusColor = '#ef4444';
+          } else if (isWarning) {
+            borderColor = '#f59e0b';
+            bgGradient = 'url(#warning-grad)';
+            statusText = 'ALERT';
+            statusColor = '#f59e0b';
+          } else if (isExit) {
+            borderColor = '#10b981';
+            bgGradient = 'url(#exit-grad)';
+            statusText = 'EXIT';
+            statusColor = '#10b981';
           }
+          
+          const hasPermit = active_permits.some(p => p.zone === node.id);
+          const activePermit = active_permits.find(p => p.zone === node.id);
 
           return (
-            <g key={`node-${node.id}`} className="group cursor-pointer">
-              {/* Outer pulsing ring for warning/critical zones */}
-              {showPulsingRing && (
+            <g key={node.id}>
+              {/* Hazard ring expansion */}
+              {isDanger && (
                 <circle
-                  cx={node.x}
-                  cy={node.y}
-                  r="52"
+                  cx={coords.x}
+                  cy={coords.y}
+                  r="20"
                   fill="none"
-                  stroke={gasLevel >= 12.0 ? '#f43f5e' : '#f59e0b'}
-                  strokeWidth="1"
-                  opacity="0.3"
-                  className="node-pulse-ring"
+                  stroke="#ef4444"
+                  strokeWidth="2"
+                  className="hazard-expand"
                 />
               )}
 
-              {/* Expanding Hazard Radius (Demo Drama) */}
-              {node.id === 4 && systemStatus === "EVACUATING" && (
-                <circle
-                  cx={node.x}
-                  cy={node.y}
-                  r="38"
-                  fill="none"
-                  stroke="#f43f5e"
-                  strokeWidth="1.5"
-                  className="expanding-hazard-circle"
-                />
-              )}
-
-              {/* Node Outer Ring */}
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r="38"
-                fill="none"
-                className={`transition-all duration-300 ${ringColor}`}
-                strokeWidth="2"
+              {/* Room Card */}
+              <rect
+                x={coords.x - 70}
+                y={coords.y - 35}
+                width="140"
+                height="70"
+                rx="8"
+                fill={bgGradient}
+                stroke={borderColor}
+                strokeWidth="1.5"
+                className={isDanger ? 'danger-pulse' : ''}
+                filter={isDanger ? 'url(#glow-red)' : ''}
               />
-
-              {/* Node Core Bubble */}
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r="28"
-                className={`transition-all duration-300 ${borderClass} ${fillClass}`}
-                strokeWidth="2.5"
-                filter={outerGlow ? `url(#${outerGlow})` : ''}
-              />
-
-              {/* Node text identification */}
+              
+              {/* Sector / Node label */}
               <text
-                x={node.x}
-                y={node.y + 4}
-                textAnchor="middle"
-                fill={node.is_exit ? '#22d3ee' : '#f8fafc'}
-                fontSize="13"
-                fontWeight="900"
-                fontFamily="monospace"
+                x={coords.x - 60}
+                y={coords.y - 16}
+                fill="#f8fafc"
+                fontSize="9.5"
+                fontWeight="800"
+                fontFamily="sans-serif"
+                letterSpacing="0.3"
               >
                 {node.id}
               </text>
+              
+              {/* Status Badge */}
+              <rect
+                x={coords.x - 60}
+                y={coords.y - 3}
+                width="45"
+                height="12"
+                rx="2.5"
+                fill={`${statusColor}15`}
+                stroke={statusColor}
+                strokeWidth="0.5"
+              />
+              <text
+                x={coords.x - 37.5}
+                y={coords.y + 6}
+                textAnchor="middle"
+                fill={statusColor}
+                fontSize="7.5"
+                fontWeight="900"
+                fontFamily="monospace"
+              >
+                {statusText}
+              </text>
 
-              {/* Label card block underneath node bubble */}
-              <g transform={`translate(${node.x}, ${node.y + 54})`}>
-                <rect
-                  x="-85"
-                  y="-14"
-                  width="170"
-                  height="32"
-                  rx="6"
-                  fill="#0c101d"
-                  stroke={node.id === 4 ? (gasLevel >= 12.0 ? '#f43f5e' : gasLevel >= 6.0 ? '#f59e0b' : '#1e293b') : '#1e293b'}
-                  strokeWidth="1"
-                  opacity="0.9"
-                />
-                
-                {/* Node Name */}
-                <text
-                  textAnchor="middle"
-                  fill="#cbd5e1"
-                  fontSize="11"
-                  fontWeight="bold"
-                  fontFamily="monospace"
-                  letterSpacing="0.5"
-                >
-                  {node.name}
-                </text>
-
-                {/* Subtext sensor/status */}
-                {node.id === 4 && (
+              {/* Active Permit Indicator */}
+              {hasPermit && activePermit && (
+                <g>
+                  <rect
+                    x={coords.x - 8}
+                    y={coords.y - 3}
+                    width="68"
+                    height="12"
+                    rx="2.5"
+                    fill="#f59e0b15"
+                    stroke="#f59e0b"
+                    strokeWidth="0.5"
+                  />
                   <text
-                    y="12"
+                    x={coords.x + 26}
+                    y={coords.y + 6}
                     textAnchor="middle"
-                    className={`text-[9px] font-black ${
-                      gasLevel >= 12.0 ? 'fill-rose-400 animate-pulse' : gasLevel >= 6.0 ? 'fill-amber-400' : 'fill-emerald-400'
-                    }`}
+                    fill="#f59e0b"
+                    fontSize="7"
+                    fontWeight="800"
                     fontFamily="monospace"
                   >
-                    GAS LEAK: {gasLevel.toFixed(2)}%
+                    {activePermit.type.toUpperCase()}
                   </text>
-                )}
-                
-                {node.is_exit && (
-                  <text y="12" textAnchor="middle" fill="#22d3ee" className="text-[9px] font-bold">
-                    EXIT CORRIDOR
-                  </text>
-                )}
-
-                {!node.is_exit && node.id !== 4 && hasActivePermit && (
-                  <text y="12" textAnchor="middle" fill="#fbbf24" className="text-[9px] font-bold uppercase">
-                    ⚠️ PERMIT ACTIVE
-                  </text>
-                )}
-              </g>
+                </g>
+              )}
             </g>
           );
         })}
 
-        {/* 5. DRAW PLAYERS / WORKERS */}
+        {/* Level 4: Draw Workers (As clustered telemetry beacons) */}
         {workers.map((worker) => {
-          if (worker.status === 'Evacuated') return null;
-
+          const coords = getWorkerPosition(worker);
+          const isEvacuating = worker.status === 'evacuating';
+          const workerColor = isEvacuating ? '#ef4444' : '#3b82f6';
+          
           return (
-            <g key={`worker-group-${worker.id}`} className="transition-all duration-1000 ease-linear">
-              {/* Outer pulsing ping */}
+            <g
+              key={worker.id}
+              transform={`translate(${coords.x}, ${coords.y})`}
+              className="worker-group"
+            >
+              {/* Pulsing signal wave */}
               <circle
-                cx={worker.x}
-                cy={worker.y}
-                r="18"
-                fill={worker.color || '#06b6d4'}
-                opacity="0.1"
-                className="animate-ping"
-                style={{ animationDuration: '2.5s' }}
+                cx="0"
+                cy="0"
+                r="10"
+                fill="none"
+                stroke={workerColor}
+                strokeWidth="1.5"
+                className="worker-beacon"
               />
-
-              {/* Outer stroke border */}
+              
+              {/* Inner beacon core */}
               <circle
-                cx={worker.x}
-                cy={worker.y}
-                r="9"
-                fill="#090c15"
-                stroke={worker.color || '#06b6d4'}
-                strokeWidth="2.5"
-                style={{ transition: 'cx 1.0s linear, cy 1.0s linear' }}
+                cx="0"
+                cy="0"
+                r="5.5"
+                fill={workerColor}
+                stroke="#ffffff"
+                strokeWidth="1.5"
+                filter={isEvacuating ? 'url(#glow-red)' : 'url(#glow-cyan)'}
               />
-
-              {/* Inner core */}
-              <circle
-                cx={worker.x}
-                cy={worker.y}
-                r="4.5"
-                fill={worker.color || '#06b6d4'}
-                className={worker.status === 'Rerouting' ? 'animate-pulse' : ''}
-                style={{ transition: 'cx 1.0s linear, cy 1.0s linear' }}
-              />
-
-              {/* ID Tag indicator label */}
-              <g 
-                transform={`translate(${worker.x}, ${worker.y - 15})`}
-                style={{ transition: 'transform 1.0s linear' }}
-              >
+              
+              {/* Worker ID Badge tag below the dot to avoid overlapping text */}
+              <g>
                 <rect
-                  x="-20"
-                  y="-9"
-                  width="40"
-                  height="14"
+                  x="-13"
+                  y="9"
+                  width="26"
+                  height="11"
                   rx="3"
-                  fill="#0d111d"
-                  stroke={worker.status === 'Rerouting' ? '#f43f5e' : '#334155'}
+                  fill="#0b0f19"
+                  stroke={workerColor}
                   strokeWidth="1"
-                  opacity="0.85"
+                  opacity="0.95"
                 />
                 <text
+                  x="0"
+                  y="17"
                   textAnchor="middle"
-                  fill={worker.status === 'Rerouting' ? '#f43f5e' : '#f1f5f9'}
-                  fontSize="8"
+                  fill="#ffffff"
+                  fontSize="7"
                   fontWeight="900"
                   fontFamily="monospace"
                 >

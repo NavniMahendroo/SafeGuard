@@ -1,199 +1,150 @@
-import { create } from 'zustand';
+import { create } from 'zustand'
 
-export const useSafetyStore = create((set, get) => {
-  let ws = null;
-  let reconnectTimeout = null;
+export const useStore = create((set, get) => {
+  let ws = null
+  let reconnectTimeout = null
 
   return {
-    // Connection State
+    // WebSocket connection
     connected: false,
-    error: null,
-
-    // Telemetry State (Mapped to requested variables)
+    apiHost: '127.0.0.1:8000',
+    
+    // Telemetry state
+    status: 'NORMAL',
     timestamp: null,
-    systemStatus: "NORMAL", // "NORMAL", "WARNING", "EVACUATING"
-    gasLevel: 4.5,
-    activePermits: [],
-    workers: [],
-    safeRoute: [], // Array of node IDs for A* pathing (representative path during evac)
-    graph: { nodes: [], edges: [] },
+    telemetry: {
+      gas_level: 4.0,
+      temperature: 32.0,
+      pressure: 1.8,
+      anomaly_score: 0.0
+    },
+    lead_time_minutes: null,
+    
+    // Workers and permits
+    workers: [
+      { id: 'W1', node: 'Assembly Line A', x: 240, y: 180, status: 'normal' },
+      { id: 'W2', node: 'Assembly Line B', x: 240, y: 420, status: 'normal' },
+      { id: 'W3', node: 'Control Room', x: 640, y: 180, status: 'normal' }
+    ],
+    active_permits: [],
+    triggered_rules: [],
+    evacuation_paths: {},
+    nodes: [],
+    cooldown_seconds_remaining: 0,
 
-    // Database Logs (REST)
-    permitHistory: [],
-    incidentHistory: [],
-
-    // Initialize Connection & Fetch Logs
+    // WebSocket connection with auto-reconnect and host fallback rotation
     connect: () => {
-      if (ws) return;
+      if (ws) return
+
+      let connectionAttempt = 0
+      const hosts = ['127.0.0.1:8000', 'localhost:8000']
+      
+      const currentHost = typeof window !== 'undefined' ? window.location.hostname : ''
+      if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+        hosts.push(`${currentHost}:8000`)
+      }
 
       const connectWS = () => {
-        console.log('[SafeGuard Store] Connecting to WebSocket...');
-        ws = new WebSocket('ws://localhost:8000/ws/telemetry');
-
+        const host = hosts[connectionAttempt % hosts.length]
+        console.log(`[Store] Connecting to WebSocket at ws://${host}/ws...`)
+        ws = new WebSocket(`ws://${host}/ws`)
+        
         ws.onopen = () => {
-          console.log('[SafeGuard Store] WebSocket connected.');
-          set({ connected: true, error: null });
-          get().fetchPermits();
-          get().fetchIncidents();
-        };
-
+          console.log(`[Store] WebSocket connected to ${host}`)
+          set({ connected: true, apiHost: host })
+        }
+        
+        ws.onclose = () => {
+          console.log(`[Store] WebSocket disconnected from ${host}, retrying in 3s...`)
+          set({ connected: false })
+          ws = null
+          connectionAttempt++
+          reconnectTimeout = setTimeout(connectWS, 3000)
+        }
+        
+        ws.onerror = (error) => {
+          console.error(`[Store] WebSocket error on ${host}:`, error)
+        }
+        
         ws.onmessage = (event) => {
           try {
-            const data = JSON.parse(event.data);
-            const currentState = get();
-            const updates = {};
-
-            // 1. Map systemStatus based on gas level and critical alert
-            let newStatus = "NORMAL";
-            if (data.critical_alert) {
-              newStatus = "EVACUATING";
-            } else if (data.gas_level >= 6.0) {
-              newStatus = "WARNING";
-            }
-
-            if (newStatus !== currentState.systemStatus) updates.systemStatus = newStatus;
-            if (data.timestamp !== currentState.timestamp) updates.timestamp = data.timestamp;
-            if (data.gas_level !== currentState.gasLevel) updates.gasLevel = data.gas_level;
-
-            // 2. Map workers coords [x, y] to .x and .y for easier SVG rendering
-            const mappedWorkers = (data.workers || []).map(w => ({
-              ...w,
-              x: w.coords ? w.coords[0] : 0,
-              y: w.coords ? w.coords[1] : 0
-            }));
-
-            if (JSON.stringify(mappedWorkers) !== JSON.stringify(currentState.workers)) {
-              updates.workers = mappedWorkers;
-            }
-
-            // 3. Extract a representative A* safeRoute if evacuating
-            // We use the path of the first actively evacuated worker as the primary display route
-            let activeEvacRoute = [];
-            if (newStatus === "EVACUATING") {
-              const movingWorker = mappedWorkers.find(w => w.path && w.path.length > 0 && w.status !== 'Evacuated');
-              if (movingWorker) {
-                // Prepend current node to show the full route starting point
-                activeEvacRoute = [movingWorker.current_node, ...movingWorker.path];
-              } else {
-                // Fallback exit route bypassing node 4 (Gas storage)
-                // e.g., 2 -> 3 -> 5 -> 6
-                activeEvacRoute = [2, 3, 5, 6];
-              }
-            }
-            if (JSON.stringify(activeEvacRoute) !== JSON.stringify(currentState.safeRoute)) {
-              updates.safeRoute = activeEvacRoute;
-            }
-
-            // 4. Base payload arrays
-            if (JSON.stringify(data.active_permits) !== JSON.stringify(currentState.activePermits)) {
-              updates.activePermits = data.active_permits;
-            }
-            if (data.graph && JSON.stringify(data.graph) !== JSON.stringify(currentState.graph)) {
-              updates.graph = data.graph;
-            }
-
-            if (Object.keys(updates).length > 0) {
-              set(updates);
-            }
-          } catch (err) {
-            console.error('[SafeGuard Store] WebSocket message error:', err);
+            const data = JSON.parse(event.data)
+            set({
+              status: data.status,
+              timestamp: data.timestamp,
+              telemetry: data.telemetry,
+              lead_time_minutes: data.lead_time_minutes,
+              workers: data.workers,
+              active_permits: data.active_permits,
+              triggered_rules: data.triggered_rules,
+              evacuation_paths: data.evacuation_paths,
+              nodes: data.nodes,
+              cooldown_seconds_remaining: data.cooldown_seconds_remaining,
+            })
+          } catch (error) {
+            console.error('[Store] Parse error:', error)
           }
-        };
+        }
+      }
 
-        ws.onerror = (err) => {
-          console.error('[SafeGuard Store] WebSocket error:', err);
-          set({ error: 'Connection error' });
-        };
-
-        ws.onclose = () => {
-          console.log('[SafeGuard Store] WebSocket disconnected. Reconnecting in 3s...');
-          set({ connected: false });
-          ws = null;
-          reconnectTimeout = setTimeout(connectWS, 3000);
-        };
-      };
-
-      connectWS();
+      connectWS()
     },
 
     disconnect: () => {
       if (ws) {
-        ws.close();
-        ws = null;
+        ws.close()
+        ws = null
       }
       if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-        reconnectTimeout = null;
+        clearTimeout(reconnectTimeout)
+        reconnectTimeout = null
       }
-      set({ connected: false });
+      set({ connected: false })
     },
 
-    // REST - Permits
-    fetchPermits: async () => {
+    // Permit management
+    issuePermit: async (type, zone) => {
       try {
-        const res = await fetch('http://localhost:8000/api/permits');
-        if (res.ok) {
-          const data = await res.json();
-          set({ permitHistory: data });
-        }
-      } catch (err) {
-        console.error('[SafeGuard Store] Failed to fetch permits history:', err);
-      }
-    },
-
-    createPermit: async (zoneId, zoneName, permitType) => {
-      try {
-        const res = await fetch('http://localhost:8000/api/permits', {
+        const apiHost = get().apiHost || '127.0.0.1:8000'
+        const response = await fetch(`http://${apiHost}/api/permits`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ zone_id: zoneId, zone_name: zoneName, permit_type: permitType })
-        });
-        if (res.ok) {
-          await get().fetchPermits();
-        }
-      } catch (err) {
-        console.error('[SafeGuard Store] Failed to create permit:', err);
+          body: JSON.stringify({ type, zone })
+        })
+        if (!response.ok) throw new Error('Failed to issue permit')
+        return await response.json()
+      } catch (error) {
+        console.error('[Permit] Issue error:', error)
+        throw error
       }
     },
 
-    closePermit: async (permitId) => {
+    revokePermit: async (permitId) => {
       try {
-        const res = await fetch(`http://localhost:8000/api/permits/${permitId}/close`, {
-          method: 'POST'
-        });
-        if (res.ok) {
-          await get().fetchPermits();
-        }
-      } catch (err) {
-        console.error('[SafeGuard Store] Failed to close permit:', err);
-      }
-    },
-
-    // REST - Incidents
-    fetchIncidents: async () => {
-      try {
-        const res = await fetch('http://localhost:8000/api/incidents');
-        if (res.ok) {
-          const data = await res.json();
-          set({ incidentHistory: data });
-        }
-      } catch (err) {
-        console.error('[SafeGuard Store] Failed to fetch incidents history:', err);
+        const apiHost = get().apiHost || '127.0.0.1:8000'
+        const response = await fetch(`http://${apiHost}/api/permits/${permitId}`, {
+          method: 'DELETE'
+        })
+        if (!response.ok) throw new Error('Failed to revoke permit')
+        return await response.json()
+      } catch (error) {
+        console.error('[Permit] Revoke error:', error)
+        throw error
       }
     },
 
     resolveIncident: async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/incidents/resolve', {
+        const apiHost = get().apiHost || '127.0.0.1:8000'
+        const response = await fetch(`http://${apiHost}/api/resolve`, {
           method: 'POST'
-        });
-        if (res.ok) {
-          // Re-fetch incidents and refresh local variables
-          await get().fetchIncidents();
-        }
-      } catch (err) {
-        console.error('[SafeGuard Store] Failed to resolve incident:', err);
+        })
+        if (!response.ok) throw new Error('Failed to resolve incident')
+        return await response.json()
+      } catch (error) {
+        console.error('[Incident] Resolve error:', error)
+        throw error
       }
-    }
-  };
-});
+    },
+  }
+})
