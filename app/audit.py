@@ -10,8 +10,16 @@ def record_audit(snapshot: Dict, rule_id: str, anomaly_score: float, lead_time_a
     Includes: telemetry, workers, permits, triggered_rules, rag_context (retrieved regulations),
               anomaly_score, lead_time_at_trigger
     """
-    # Retrieve RAG context for the incident
-    incident_description = f"Incident triggered by {rule_id} with gas level {snapshot.get('gas_level')}% and temperature {snapshot.get('temperature')}°C"
+    # Map rule ID to descriptive semantic context for vector search
+    descriptions = {
+        "OISD-STD-137": "Explosion risk due to high gas level during active Hot Work permit in hazardous area.",
+        "FACTORY-ACT-SEC-36": "Dangerous fumes and asphyxiation risk due to high gas level during active Confined Space permit.",
+        "DGMS-THERMAL-STRESS": "Thermal stress and high temperature hazard during active Cold Work permit."
+    }
+    desc = descriptions.get(rule_id, "Industrial safety threshold breach and regulatory non-compliance.")
+    
+    # Retrieve RAG context using descriptive query for high-quality FAISS matching
+    incident_description = f"{desc} Gas level: {snapshot.get('gas_level')}%. Temperature: {snapshot.get('temperature')}°C."
     rag_context = rag.retrieve(incident_description, top_k=2)
     
     # Build complete audit snapshot
