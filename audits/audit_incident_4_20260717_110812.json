@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-07-17T11:08:12.830034+00:00",
+  "incident_id": 4,
+  "trigger_reason": "OISD-STD-137",
+  "gas_level": 12.16,
+  "temperature": 27.7,
+  "pressure": 1.55,
+  "active_permits": [
+    {
+      "id": 8,
+      "type": "Hot Work",
+      "zone": "Gas Storage Zone",
+      "issued_at": "2026-07-17T10:37:07.518033"
+    }
+  ],
+  "workers": [
+    {
+      "id": "W1",
+      "node": "Assembly Line B",
+      "x": 240,
+      "y": 420,
+      "status": "evacuating"
+    },
+    {
+      "id": "W2",
+      "node": "Gas Storage Zone",
+      "x": 480,
+      "y": 300,
+      "status": "evacuating"
+    },
+    {
+      "id": "W3",
+      "node": "Assembly Line A",
+      "x": 240,
+      "y": 180,
+      "status": "evacuating"
+    }
+  ],
+  "triggered_rules": [
+    {
+      "triggered": true,
+      "rule_id": "OISD-STD-137",
+      "standard": "OISD-STD-137",
+      "severity": "CRITICAL",
+      "action": "Evacuate immediately"
+    }
+  ],
+  "rag_context": [
+    {
+      "id": "OISD-STD-137",
+      "text": "Work Permit System in Hazardous Areas - Section 4.2: Precautions for Hot Work. Mandates atmospheric testing and active permit validation before approving welding, cutting, or spark-producing operations in explosive zones.",
+      "action": "Verify atmospheric gas levels below LEL, ensure fire watch present, validate hot work permit is active.",
+      "similarity_score": 0.6249164938926697
+    },
+    {
+      "id": "FACTORY-ACT-SEC-36",
+      "text": "Factory Act Section 36: Precautions against dangerous fumes. Sub-section 2: Confined Space Entry Controls. Restricts entry and regulates overcrowding inside vessels, tanks, or pits where dangerous gas, fume, or dust is likely to present asphyxiation risks.",
+      "action": "Implement confined space entry permit system, limit occupancy to authorized personnel, ensure ventilation and gas monitoring.",
+      "similarity_score": 0.4869259297847748
+    }
+  ],
+  "anomaly_score": 0.0296221035199834,
+  "lead_time_at_trigger": 0.0
+}

@@ -3,10 +3,12 @@ import { create } from 'zustand'
 export const useStore = create((set, get) => {
   let ws = null
   let reconnectTimeout = null
+  let reconnectDelay = 1000
 
   return {
     // WebSocket connection
     connected: false,
+    wsStatus: 'disconnected', // 'connecting' | 'connected' | 'disconnected' | 'reconnecting'
     apiHost: '127.0.0.1:8000',
     
     // Telemetry state
@@ -31,6 +33,7 @@ export const useStore = create((set, get) => {
     evacuation_paths: {},
     nodes: [],
     cooldown_seconds_remaining: 0,
+    incidents: [], // Shared incidents registry
 
     // WebSocket connection with auto-reconnect and host fallback rotation
     connect: () => {
@@ -44,6 +47,8 @@ export const useStore = create((set, get) => {
         hosts.push(`${currentHost}:8000`)
       }
 
+      set({ wsStatus: 'connecting' })
+
       const connectWS = () => {
         const host = hosts[connectionAttempt % hosts.length]
         console.log(`[Store] Connecting to WebSocket at ws://${host}/ws...`)
@@ -51,15 +56,22 @@ export const useStore = create((set, get) => {
         
         ws.onopen = () => {
           console.log(`[Store] WebSocket connected to ${host}`)
-          set({ connected: true, apiHost: host })
+          set({ connected: true, apiHost: host, wsStatus: 'connected' })
+          reconnectDelay = 1000 // Reset backoff delay
+          
+          // Immediately re-fetch current state on reconnect
+          get().fetchActivePermits()
+          get().fetchIncidents()
         }
         
         ws.onclose = () => {
-          console.log(`[Store] WebSocket disconnected from ${host}, retrying in 3s...`)
-          set({ connected: false })
+          console.log(`[Store] WebSocket disconnected from ${host}, retrying in ${reconnectDelay}ms...`)
+          set({ connected: false, wsStatus: 'reconnecting' })
           ws = null
           connectionAttempt++
-          reconnectTimeout = setTimeout(connectWS, 3000)
+          reconnectTimeout = setTimeout(connectWS, reconnectDelay)
+          // Exponential backoff capped at 15s
+          reconnectDelay = Math.min(reconnectDelay * 2, 15000)
         }
         
         ws.onerror = (error) => {
@@ -99,7 +111,36 @@ export const useStore = create((set, get) => {
         clearTimeout(reconnectTimeout)
         reconnectTimeout = null
       }
-      set({ connected: false })
+      reconnectDelay = 1000
+      set({ connected: false, wsStatus: 'disconnected' })
+    },
+
+    // Fetch active permits list
+    fetchActivePermits: async () => {
+      try {
+        const apiHost = get().apiHost || '127.0.0.1:8000'
+        const response = await fetch(`http://${apiHost}/api/permits`)
+        if (response.ok) {
+          const data = await response.json()
+          set({ active_permits: data })
+        }
+      } catch (error) {
+        console.error('[Permits] Fetch error:', error)
+      }
+    },
+
+    // Fetch incident logs
+    fetchIncidents: async () => {
+      try {
+        const apiHost = get().apiHost || '127.0.0.1:8000'
+        const response = await fetch(`http://${apiHost}/api/incidents`)
+        if (response.ok) {
+          const data = await response.json()
+          set({ incidents: data })
+        }
+      } catch (error) {
+        console.error('[Incidents] Fetch error:', error)
+      }
     },
 
     // Permit management
@@ -111,8 +152,13 @@ export const useStore = create((set, get) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type, zone })
         })
-        if (!response.ok) throw new Error('Failed to issue permit')
-        return await response.json()
+        if (!response.ok) {
+          const errData = await response.json()
+          throw new Error(errData.detail || 'Failed to issue permit')
+        }
+        const data = await response.json()
+        get().fetchActivePermits()
+        return data
       } catch (error) {
         console.error('[Permit] Issue error:', error)
         throw error
@@ -126,7 +172,9 @@ export const useStore = create((set, get) => {
           method: 'DELETE'
         })
         if (!response.ok) throw new Error('Failed to revoke permit')
-        return await response.json()
+        const data = await response.json()
+        get().fetchActivePermits()
+        return data
       } catch (error) {
         console.error('[Permit] Revoke error:', error)
         throw error
@@ -140,11 +188,42 @@ export const useStore = create((set, get) => {
           method: 'POST'
         })
         if (!response.ok) throw new Error('Failed to resolve incident')
-        return await response.json()
+        const data = await response.json()
+        get().fetchIncidents()
+        return data
       } catch (error) {
         console.error('[Incident] Resolve error:', error)
         throw error
       }
     },
+
+    // One-click full reset
+    resetDemo: async () => {
+      try {
+        const apiHost = get().apiHost || '127.0.0.1:8000'
+        const response = await fetch(`http://${apiHost}/api/reset`, {
+          method: 'POST'
+        })
+        if (!response.ok) throw new Error('Failed to reset demo')
+        const data = await response.json()
+        set({
+          status: data.status,
+          timestamp: data.timestamp,
+          telemetry: data.telemetry,
+          lead_time_minutes: data.lead_time_minutes,
+          workers: data.workers,
+          active_permits: data.active_permits,
+          triggered_rules: data.triggered_rules,
+          evacuation_paths: data.evacuation_paths,
+          nodes: data.nodes,
+          cooldown_seconds_remaining: data.cooldown_seconds_remaining,
+        })
+        get().fetchIncidents()
+        return data
+      } catch (error) {
+        console.error('[Demo Reset] Error:', error)
+        throw error
+      }
+    }
   }
 })

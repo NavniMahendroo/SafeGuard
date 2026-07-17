@@ -79,9 +79,10 @@ def get_safe_routes(workers: Dict, hazard_node: Optional[str]) -> Dict:
     temp_graph = G.copy()
     
     if hazard_node:
-        # Penalize all edges connected to hazard node
-        for u, v in list(G.edges(hazard_node)):
-            temp_graph[u][v]['weight'] = 999999
+        # Penalize all edges connected to the hazard node (both incoming and outgoing)
+        for u, v in list(G.edges):
+            if u == hazard_node or v == hazard_node:
+                temp_graph[u][v]['weight'] = 999999
     
     evacuation_paths = {}
     for worker_id, worker in workers.items():

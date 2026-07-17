@@ -16,12 +16,14 @@ import {
   ArrowLeft,
   Server,
   Volume2,
-  VolumeX
+  VolumeX,
+  RotateCcw
 } from 'lucide-react';
 
 function CommandCenter({ onBack }) {
   const {
     connected,
+    wsStatus,
     status,
     telemetry,
     lead_time_minutes,
@@ -31,11 +33,14 @@ function CommandCenter({ onBack }) {
     evacuation_paths,
     nodes,
     cooldown_seconds_remaining,
+    incidents,
     connect,
     disconnect,
     issuePermit,
     revokePermit,
     resolveIncident,
+    fetchIncidents,
+    resetDemo,
     apiHost
   } = useStore();
 
@@ -45,22 +50,12 @@ function CommandCenter({ onBack }) {
   const [isMuted, setIsMuted] = useState(true);
   const [audioCtx, setAudioCtx] = useState(null);
 
-  // RAG Compliance Audit States
-  const [incidents, setIncidents] = useState([]);
+  // Toast notifications
+  const [toast, setToast] = useState(null);
+
+  // RAG Compliance Audit States (incidents loaded from global store)
   const [activeAudit, setActiveAudit] = useState(null);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
-
-  const fetchIncidents = async () => {
-    try {
-      const response = await fetch(`http://${apiHost}/api/incidents`);
-      if (response.ok) {
-        const data = await response.json();
-        setIncidents(data);
-      }
-    } catch (e) {
-      console.error("Failed to fetch incidents:", e);
-    }
-  };
 
   const handleViewAudit = async (incidentId) => {
     try {
@@ -78,9 +73,23 @@ function CommandCenter({ onBack }) {
     }
   };
 
+  const handleResetDemo = async () => {
+    try {
+      setIsSubmitting(true);
+      await resetDemo();
+      setToast({ type: 'success', message: 'Demo reset to baseline settings successfully!' });
+      setTimeout(() => setToast(null), 3000);
+    } catch (err) {
+      setToast({ type: 'error', message: 'Failed to reset demo: ' + err.message });
+      setTimeout(() => setToast(null), 3000);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     fetchIncidents();
-  }, [status]);
+  }, [status, fetchIncidents]);
 
   // Initialize AudioContext on first toggle
   const toggleMute = () => {
@@ -178,6 +187,12 @@ function CommandCenter({ onBack }) {
 
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col font-sans select-none relative">
+      {(wsStatus === 'reconnecting' || wsStatus === 'connecting') && (
+        <div className="bg-accent-rose text-white text-center py-2 px-4 animate-pulse flex items-center justify-center space-x-2 font-semibold text-xs tracking-wider z-50 sticky top-0 border-b border-accent-rose/30 shadow-[0_4px_12px_rgba(244,63,94,0.3)]">
+          <span className="w-2 h-2 bg-white rounded-full animate-ping" />
+          <span>SAFETY DATASTREAM DISCONNECTED: RECONNECTING TO BACKEND SENSORS ({wsStatus.toUpperCase()})...</span>
+        </div>
+      )}
       {status === 'EVACUATING' && (
         <div className="absolute inset-0 pointer-events-none z-50 border-8 border-accent-rose/20 animate-pulse" style={{ boxShadow: 'inset 0 0 80px rgba(244, 63, 94, 0.2)' }} />
       )}
@@ -243,11 +258,31 @@ function CommandCenter({ onBack }) {
             {isMuted ? 'AUDIO: OFF' : 'AUDIO: ON'}
           </button>
 
+          <button
+            onClick={handleResetDemo}
+            disabled={isSubmitting}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-bg-panel/20 text-text-muted hover:text-text hover:bg-bg-panel/40 transition text-[10px] font-mono font-bold tracking-wider disabled:opacity-50"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            RESET DEMO
+          </button>
+
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] font-mono font-bold tracking-wider ${
-            connected ? 'bg-accent-emerald/10 text-accent-emerald border-accent-emerald/20' : 'bg-accent-rose/10 text-accent-rose border-accent-rose/20 animate-pulse'
+            wsStatus === 'connected' ? 'bg-accent-emerald/10 text-accent-emerald border-accent-emerald/20' :
+            wsStatus === 'connecting' ? 'bg-accent-cyan/10 text-accent-cyan border-accent-cyan/20 animate-pulse' :
+            wsStatus === 'reconnecting' ? 'bg-accent-amber/10 text-accent-amber border-accent-amber/20 animate-pulse' :
+            'bg-accent-rose/10 text-accent-rose border-accent-rose/20 animate-pulse'
           }`}>
-            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-accent-emerald animate-pulse' : 'bg-accent-rose animate-ping'}`} />
-            {connected ? 'WS: CONNECTED' : 'WS: DISCONNECTED'}
+            <span className={`w-2 h-2 rounded-full ${
+              wsStatus === 'connected' ? 'bg-accent-emerald animate-pulse' :
+              wsStatus === 'connecting' ? 'bg-accent-cyan animate-ping' :
+              wsStatus === 'reconnecting' ? 'bg-accent-amber animate-ping' :
+              'bg-accent-rose animate-ping'
+            }`} />
+            {wsStatus === 'connected' ? 'WS: CONNECTED' :
+             wsStatus === 'connecting' ? 'WS: CONNECTING' :
+             wsStatus === 'reconnecting' ? 'WS: RECONNECTING' :
+             'WS: DISCONNECTED'}
           </div>
         </div>
       </header>
@@ -572,6 +607,16 @@ function CommandCenter({ onBack }) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {toast && (
+        <div className={`fixed bottom-5 right-5 z-50 px-4 py-3 rounded-lg border shadow-xl flex items-center gap-3 transition text-xs font-mono font-bold max-w-sm animate-bounce ${
+          toast.type === 'success'
+            ? 'bg-accent-emerald/20 border-accent-emerald text-accent-emerald'
+            : 'bg-accent-rose/20 border-accent-rose text-accent-rose'
+        }`}>
+          {toast.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+          <span>{toast.message}</span>
         </div>
       )}
     </div>

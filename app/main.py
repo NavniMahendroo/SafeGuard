@@ -231,6 +231,66 @@ async def resolve_incident(db: AsyncSession = Depends(get_db)):
     
     return {"status": "NORMAL", "message": "System reset to normal operations"}
 
+@app.post("/api/reset")
+async def reset_demo(db: AsyncSession = Depends(get_db)):
+    """Reset system status and clear active permits (return to demo-ready state)"""
+    from sqlalchemy import update
+    
+    # 1. Revoke all active permits in the database
+    await db.execute(
+        update(Permit).where(Permit.status == "active").values(status="revoked")
+    )
+    await db.commit()
+    
+    # 2. Reset in-memory telemetry state and simulator values
+    async with state_lock:
+        state["status"] = "NORMAL"
+        state["gas_level"] = 4.0
+        state["temperature"] = 32.0
+        state["pressure"] = 1.8
+        state["workers"] = {
+            "W1": {"id": "W1", "node": "Assembly Line A", "x": 240, "y": 180, "status": "normal"},
+            "W2": {"id": "W2", "node": "Assembly Line B", "x": 240, "y": 420, "status": "normal"},
+            "W3": {"id": "W3", "node": "Control Room", "x": 640, "y": 180, "status": "normal"}
+        }
+        state["active_permits"] = []
+        state["triggered_rules"] = []
+        state["evacuation_paths"] = {}
+        state["hazard_node"] = None
+        state["cooldown_seconds_remaining"] = 0
+        state["cooldown_start_time"] = None
+        state["active_incident_id"] = None
+        
+        # Reset the lead time predictor window
+        predictor.reset()
+        
+        # Construct fresh state response payload
+        payload = {
+            "status": state["status"],
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "telemetry": {
+                "gas_level": state["gas_level"],
+                "temperature": state["temperature"],
+                "pressure": state["pressure"],
+                "anomaly_score": 0.0
+            },
+            "lead_time_minutes": None,
+            "workers": list(state["workers"].values()),
+            "active_permits": state["active_permits"],
+            "triggered_rules": state["triggered_rules"],
+            "evacuation_paths": state["evacuation_paths"],
+            "nodes": [
+                {"id": name, "x": attrs["x"], "y": attrs["y"], "is_exit": attrs["is_exit"]}
+                for name, attrs in NODES.items()
+            ],
+            "cooldown_seconds_remaining": state["cooldown_seconds_remaining"]
+        }
+        
+    # Broadcast updated baseline state to all connected WS clients
+    await manager.broadcast(payload)
+    
+    return payload
+
 @app.get("/api/incidents")
 async def list_incidents(db: AsyncSession = Depends(get_db)):
     """List incidents from PostgreSQL"""
