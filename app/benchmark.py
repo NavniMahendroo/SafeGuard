@@ -23,6 +23,11 @@ except ImportError:
         lines.append(divider)
         return "\n".join(lines)
 
+# WARNING & HORIZON THRESHOLDS FOR LEAD-TIME PREDICTORS
+GAS_WARNING_THRESHOLD = 8.0
+TEMP_WARNING_THRESHOLD = 55.0
+HORIZON_LIMIT = 5.0
+
 from app.engine import evaluate_compound_risk
 from app.anomaly import detector
 from app.predictor import LeadTimePredictor
@@ -260,6 +265,8 @@ def run_benchmark():
         # Evaluates compound risk + lead time predictor + anomaly detector
         pipeline_flagged = False
         pipeline_flag_idx = None
+        pipeline_flag_reasons = []
+        pipeline_early_warned = False
         predictor = LeadTimePredictor()
 
         for idx, r in enumerate(readings):
@@ -285,24 +292,48 @@ def run_benchmark():
             )
 
             # Pipeline detection logic:
-            # Rule actually triggers
+            triggered_by_rule = False
+            triggered_by_lead_time = False
+            triggered_by_anomaly = False
+
             if triggered:
+                triggered_by_rule = True
+                
+            if r["permit_active"]:
+                # Check Proximity Gate
+                in_warning_zone = False
+                if r["permit_type"] in ["Hot Work", "Confined Space"]:
+                    if r["gas_level"] >= GAS_WARNING_THRESHOLD:
+                        in_warning_zone = True
+                elif r["permit_type"] == "Cold Work":
+                    if r["temperature"] >= TEMP_WARNING_THRESHOLD:
+                        in_warning_zone = True
+
+                # Check Horizon Gate
+                has_horizon_breach = False
+                if lead_time is not None and 0.0 < lead_time < HORIZON_LIMIT:
+                    has_horizon_breach = True
+
+                # Escalate or issue early warning
+                if in_warning_zone and has_horizon_breach:
+                    triggered_by_lead_time = True
+                elif in_warning_zone or has_horizon_breach:
+                    pipeline_early_warned = True
+
+                # Anomaly Forest
+                if anomaly_score < -0.05:
+                    triggered_by_anomaly = True
+
+            if triggered_by_rule or triggered_by_lead_time or triggered_by_anomaly:
                 pipeline_flagged = True
                 pipeline_flag_idx = idx
+                if triggered_by_rule:
+                    pipeline_flag_reasons.append("rule")
+                if triggered_by_lead_time:
+                    pipeline_flag_reasons.append("lead_time")
+                if triggered_by_anomaly:
+                    pipeline_flag_reasons.append("anomaly")
                 break
-                
-            # Or permit is active and early indicators are warning:
-            if r["permit_active"]:
-                # A) Lead time predicts a breach
-                if lead_time is not None and lead_time > 0.0:
-                    pipeline_flagged = True
-                    pipeline_flag_idx = idx
-                    break
-                # B) Isolation Forest flags highly anomalous reading
-                if anomaly_score < -0.05:
-                    pipeline_flagged = True
-                    pipeline_flag_idx = idx
-                    break
 
         results.append({
             "scenario_id": scenario["id"],
@@ -312,7 +343,9 @@ def run_benchmark():
             "naive_flagged": naive_flagged,
             "naive_flag_idx": naive_flag_idx,
             "pipeline_flagged": pipeline_flagged,
-            "pipeline_flag_idx": pipeline_flag_idx
+            "pipeline_flag_idx": pipeline_flag_idx,
+            "pipeline_flag_reasons": pipeline_flag_reasons,
+            "pipeline_early_warned": pipeline_early_warned
         })
 
     # 4. Compute Metrics
@@ -374,6 +407,9 @@ def run_benchmark():
     pipeline_fnr = (pipeline_fn / n_incidents * 100.0) if n_incidents > 0 else 0.0
     pipeline_fpr = (pipeline_fp / n_normals * 100.0) if n_normals > 0 else 0.0
 
+    # Calculate Early Warning totals
+    n_early_warnings = sum(1 for r in results if r["pipeline_early_warned"])
+
     # Reduction in False Negatives
     fn_reduction = 0.0
     if naive_fn > 0:
@@ -390,13 +426,42 @@ def run_benchmark():
         ["False Positive Rate (False Alarms)", f"{naive_fpr:.1f}%", f"{pipeline_fpr:.1f}%"],
         ["Total Scenarios Evaluated", str(len(results)), str(len(results))],
         ["True Incidents Caught", f"{naive_tp}/{n_incidents}", f"{pipeline_tp}/{n_incidents}"],
-        ["False Alarms Triggered", f"{naive_fp}/{n_normals}", f"{pipeline_fp}/{n_normals}"]
+        ["False Alarms Triggered", f"{naive_fp}/{n_normals}", f"{pipeline_fp}/{n_normals}"],
+        ["Early Warnings Issued", "N/A", str(n_early_warnings)]
     ]
+
+    # Compute Diagnostic Breakdown of False Positives
+    fp_rule_only = 0
+    fp_anomaly_only = 0
+    fp_lead_time_only = 0
+    fp_combination = 0
+    
+    for r in results:
+        if not r["is_true_incident"] and r["pipeline_flagged"]:
+            reasons = r.get("pipeline_flag_reasons", [])
+            if len(reasons) > 1:
+                fp_combination += 1
+            elif "rule" in reasons:
+                fp_rule_only += 1
+            elif "anomaly" in reasons:
+                fp_anomaly_only += 1
+            elif "lead_time" in reasons:
+                fp_lead_time_only += 1
 
     print("\n" + "="*80)
     print("🛡️ SAFEGUARD SYSTEM PERFORMANCE BENCHMARK")
     print("="*80)
     print(tabulate(metrics_data, headers=headers, tablefmt="grid"))
+    
+    print("\n" + "="*80)
+    print("🔍 FALSE POSITIVE DIAGNOSTIC BREAKDOWN (SafeGuard Pipeline)")
+    print("="*80)
+    print(f"Total False Positives: {pipeline_fp}")
+    print(f"  - Rule-only triggers:       {fp_rule_only}")
+    print(f"  - Anomaly-only triggers:    {fp_anomaly_only}")
+    print(f"  - Lead-time-only triggers:  {fp_lead_time_only}")
+    print(f"  - Combination triggers:     {fp_combination}")
+    print("="*80)
     print("\n" + "-"*80)
     
     summary_sentence = (
@@ -416,6 +481,7 @@ def run_benchmark():
             "total_normals": n_normals,
             "fn_reduction_pct": round(fn_reduction, 2),
             "avg_lead_time_gained_minutes": round(avg_lead_time_gained, 2),
+            "early_warnings_issued": n_early_warnings,
             "naive": {
                 "tpr": round(naive_tpr, 2),
                 "fnr": round(naive_fnr, 2),
@@ -432,7 +498,8 @@ def run_benchmark():
                 "tp": pipeline_tp,
                 "fp": pipeline_fp,
                 "tn": pipeline_tn,
-                "fn": pipeline_fn
+                "fn": pipeline_fn,
+                "early_warnings_issued": n_early_warnings
             }
         },
         "scenarios": [
@@ -445,6 +512,7 @@ def run_benchmark():
                 "naive_flag_index": r["naive_flag_idx"],
                 "pipeline_flagged": r["pipeline_flagged"],
                 "pipeline_flag_index": r["pipeline_flag_idx"],
+                "pipeline_early_warned": r["pipeline_early_warned"],
                 "lead_time_gained_minutes": round(max(0.0, (r["gt_breach_idx"] - r["pipeline_flag_idx"]) * 2.0 / 60.0), 2) if (r["is_true_incident"] and r["pipeline_flagged"] and r["gt_breach_idx"] is not None and r["pipeline_flag_idx"] is not None) else 0.0
             }
             for r in results

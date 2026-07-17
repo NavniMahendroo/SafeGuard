@@ -377,3 +377,23 @@ async def get_audit(incident_id: int):
 async def health_check():
     """Health check"""
     return {"status": "healthy"}
+
+@app.get("/api/test_benchmark")
+async def test_benchmark():
+    """Temporary endpoint to run and capture benchmark output"""
+    import io
+    import sys
+    from app.benchmark import run_benchmark
+    
+    old_stdout = sys.stdout
+    new_stdout = io.StringIO()
+    sys.stdout = new_stdout
+    try:
+        run_benchmark()
+        output = new_stdout.getvalue()
+    except Exception as e:
+        output = f"Error running benchmark: {e}"
+    finally:
+        sys.stdout = old_stdout
+        
+    return {"output": output}

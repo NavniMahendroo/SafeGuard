@@ -4,7 +4,8 @@
     "total_incidents": 150,
     "total_normals": 80,
     "fn_reduction_pct": 100.0,
-    "avg_lead_time_gained_minutes": 0.49,
+    "avg_lead_time_gained_minutes": 0.33,
+    "early_warnings_issued": 205,
     "naive": {
       "tpr": 80.0,
       "fnr": 20.0,
@@ -17,11 +18,12 @@
     "safeguard": {
       "tpr": 100.0,
       "fnr": 0.0,
-      "fpr": 68.75,
+      "fpr": 31.25,
       "tp": 150,
-      "fp": 55,
-      "tn": 25,
-      "fn": 0
+      "fp": 25,
+      "tn": 55,
+      "fn": 0,
+      "early_warnings_issued": 205
     }
   },
   "scenarios": [
@@ -33,8 +35,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_2",
@@ -44,8 +47,9 @@
       "naive_flagged": true,
       "naive_flag_index": 14,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.4
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_3",
@@ -55,8 +59,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_4",
@@ -66,8 +71,9 @@
       "naive_flagged": true,
       "naive_flag_index": 14,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.4
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_5",
@@ -77,8 +83,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_6",
@@ -88,8 +95,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_7",
@@ -99,8 +107,9 @@
       "naive_flagged": true,
       "naive_flag_index": 14,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.4
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.2
     },
     {
       "id": "HW_STD_8",
@@ -110,8 +119,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_9",
@@ -121,8 +131,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_10",
@@ -132,8 +143,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_11",
@@ -143,8 +155,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_12",
@@ -154,8 +167,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.3
     },
     {
       "id": "HW_STD_13",
@@ -165,8 +179,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_14",
@@ -176,8 +191,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 9,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_15",
@@ -187,8 +203,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_16",
@@ -198,8 +215,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_17",
@@ -209,8 +227,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_18",
@@ -220,8 +239,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_19",
@@ -231,8 +251,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_20",
@@ -242,8 +263,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 6,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.3
     },
     {
       "id": "HW_STD_21",
@@ -253,8 +275,9 @@
       "naive_flagged": true,
       "naive_flag_index": 14,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.4
+      "pipeline_flag_index": 6,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_22",
@@ -264,8 +287,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_23",
@@ -275,8 +299,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "HW_STD_24",
@@ -286,8 +311,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_25",
@@ -297,8 +323,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_26",
@@ -308,8 +335,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_27",
@@ -319,8 +347,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_28",
@@ -330,8 +359,9 @@
       "naive_flagged": true,
       "naive_flag_index": 17,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.5
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.3
     },
     {
       "id": "HW_STD_29",
@@ -341,8 +371,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "HW_STD_30",
@@ -352,8 +383,9 @@
       "naive_flagged": true,
       "naive_flag_index": 15,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "CS_STD_1",
@@ -363,8 +395,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_2",
@@ -374,8 +407,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_3",
@@ -385,8 +419,9 @@
       "naive_flagged": true,
       "naive_flag_index": 24,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_4",
@@ -396,8 +431,9 @@
       "naive_flagged": true,
       "naive_flag_index": 28,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_5",
@@ -407,8 +443,9 @@
       "naive_flagged": true,
       "naive_flag_index": 25,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_6",
@@ -418,8 +455,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_7",
@@ -429,8 +467,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_8",
@@ -440,8 +479,9 @@
       "naive_flagged": true,
       "naive_flag_index": 25,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_9",
@@ -451,8 +491,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_10",
@@ -462,8 +503,9 @@
       "naive_flagged": true,
       "naive_flag_index": 25,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_11",
@@ -473,8 +515,9 @@
       "naive_flagged": true,
       "naive_flag_index": 25,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_12",
@@ -484,8 +527,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_13",
@@ -495,8 +539,9 @@
       "naive_flagged": true,
       "naive_flag_index": 25,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_14",
@@ -506,8 +551,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_15",
@@ -517,8 +563,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_16",
@@ -528,8 +575,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_17",
@@ -539,8 +587,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.4
+      "pipeline_flag_index": 14,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_18",
@@ -550,8 +599,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_19",
@@ -561,8 +611,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_20",
@@ -572,8 +623,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.4
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.03
     },
     {
       "id": "CS_STD_21",
@@ -583,8 +635,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_22",
@@ -594,8 +647,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_23",
@@ -605,8 +659,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_24",
@@ -616,8 +671,9 @@
       "naive_flagged": true,
       "naive_flag_index": 25,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_25",
@@ -627,8 +683,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_26",
@@ -638,8 +695,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_27",
@@ -649,8 +707,9 @@
       "naive_flagged": true,
       "naive_flag_index": 24,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_28",
@@ -660,8 +719,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_29",
@@ -671,8 +731,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "CS_STD_30",
@@ -682,8 +743,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.37
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_1",
@@ -693,8 +755,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.5
+      "pipeline_flag_index": 17,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_2",
@@ -704,8 +767,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.57
+      "pipeline_flag_index": 19,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_3",
@@ -715,8 +779,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.53
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_4",
@@ -726,8 +791,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.5
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.17
     },
     {
       "id": "TS_STD_5",
@@ -737,8 +803,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 17,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_6",
@@ -748,8 +815,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 13,
-      "lead_time_gained_minutes": 0.17
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_7",
@@ -759,8 +827,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 11,
-      "lead_time_gained_minutes": 0.2
+      "pipeline_flag_index": 17,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_8",
@@ -770,8 +839,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.53
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_9",
@@ -781,8 +851,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 4,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_10",
@@ -792,8 +863,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.53
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_11",
@@ -803,8 +875,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.53
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_12",
@@ -814,8 +887,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.5
+      "pipeline_flag_index": 10,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.23
     },
     {
       "id": "TS_STD_13",
@@ -825,8 +899,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.53
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_14",
@@ -836,8 +911,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.5
+      "pipeline_flag_index": 17,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_15",
@@ -847,8 +923,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 5,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_16",
@@ -858,8 +935,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
-      "lead_time_gained_minutes": 0.53
+      "pipeline_flag_index": 11,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.27
     },
     {
       "id": "TS_STD_17",
@@ -869,8 +947,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.57
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.2
     },
     {
       "id": "TS_STD_18",
@@ -880,8 +959,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.5
+      "pipeline_flag_index": 17,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_19",
@@ -891,8 +971,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.5
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.03
     },
     {
       "id": "TS_STD_20",
@@ -903,6 +984,7 @@
       "naive_flag_index": null,
       "pipeline_flagged": true,
       "pipeline_flag_index": 19,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -913,8 +995,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 12,
-      "lead_time_gained_minutes": 0.2
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_22",
@@ -924,8 +1007,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.57
+      "pipeline_flag_index": 19,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_23",
@@ -935,8 +1019,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.53
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_24",
@@ -946,8 +1031,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.53
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_25",
@@ -957,8 +1043,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.5
+      "pipeline_flag_index": 17,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_26",
@@ -968,8 +1055,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 17,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_27",
@@ -979,8 +1067,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.53
+      "pipeline_flag_index": 18,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_28",
@@ -990,8 +1079,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.5
+      "pipeline_flag_index": 17,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_29",
@@ -1001,8 +1091,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 17,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "TS_STD_30",
@@ -1012,8 +1103,9 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.5
+      "pipeline_flag_index": 17,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "SLOW_INC_1",
@@ -1023,8 +1115,9 @@
       "naive_flagged": true,
       "naive_flag_index": 25,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.77
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_2",
@@ -1034,8 +1127,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "SLOW_INC_3",
@@ -1045,8 +1139,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_4",
@@ -1056,8 +1151,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_5",
@@ -1067,8 +1163,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.83
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "SLOW_INC_6",
@@ -1078,8 +1175,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.83
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "SLOW_INC_7",
@@ -1089,8 +1187,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_8",
@@ -1100,8 +1199,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.83
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "SLOW_INC_9",
@@ -1111,8 +1211,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_10",
@@ -1122,8 +1223,9 @@
       "naive_flagged": true,
       "naive_flag_index": 25,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.77
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.4
     },
     {
       "id": "SLOW_INC_11",
@@ -1133,8 +1235,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.83
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "SLOW_INC_12",
@@ -1144,8 +1247,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_13",
@@ -1155,8 +1259,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "SLOW_INC_14",
@@ -1166,8 +1271,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_15",
@@ -1177,8 +1283,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_16",
@@ -1188,8 +1295,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_17",
@@ -1199,8 +1307,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_18",
@@ -1210,8 +1319,9 @@
       "naive_flagged": true,
       "naive_flag_index": 25,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.77
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_19",
@@ -1221,8 +1331,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.83
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "SLOW_INC_20",
@@ -1232,8 +1343,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_21",
@@ -1243,8 +1355,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_22",
@@ -1254,8 +1367,9 @@
       "naive_flagged": true,
       "naive_flag_index": 25,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.77
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_23",
@@ -1265,8 +1379,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_24",
@@ -1276,8 +1391,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.83
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "SLOW_INC_25",
@@ -1287,8 +1403,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_26",
@@ -1298,8 +1415,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_27",
@@ -1309,8 +1427,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.83
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "SLOW_INC_28",
@@ -1320,8 +1439,9 @@
       "naive_flagged": true,
       "naive_flag_index": 27,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.83
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "SLOW_INC_29",
@@ -1331,8 +1451,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 13,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.43
     },
     {
       "id": "SLOW_INC_30",
@@ -1342,8 +1463,9 @@
       "naive_flagged": true,
       "naive_flag_index": 26,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.8
+      "pipeline_flag_index": 12,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.47
     },
     {
       "id": "FAST_INC_1",
@@ -1353,8 +1475,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_2",
@@ -1364,8 +1487,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_3",
@@ -1375,8 +1499,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 9,
-      "lead_time_gained_minutes": 0.23
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_4",
@@ -1386,8 +1511,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_5",
@@ -1398,6 +1524,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": true,
       "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1408,8 +1535,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_7",
@@ -1419,8 +1547,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 10,
-      "lead_time_gained_minutes": 0.2
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_8",
@@ -1430,8 +1559,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 10,
-      "lead_time_gained_minutes": 0.2
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_9",
@@ -1442,6 +1572,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": true,
       "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1452,8 +1583,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_11",
@@ -1463,8 +1595,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_12",
@@ -1475,6 +1608,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": true,
       "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1485,8 +1619,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_14",
@@ -1496,8 +1631,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_15",
@@ -1507,8 +1643,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 11,
-      "lead_time_gained_minutes": 0.17
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_16",
@@ -1518,8 +1655,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_17",
@@ -1529,8 +1667,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 8,
-      "lead_time_gained_minutes": 0.27
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_18",
@@ -1540,8 +1679,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 6,
-      "lead_time_gained_minutes": 0.33
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_19",
@@ -1551,8 +1691,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_20",
@@ -1563,6 +1704,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": true,
       "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1573,8 +1715,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 15,
-      "lead_time_gained_minutes": 0.03
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_22",
@@ -1584,8 +1727,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_23",
@@ -1595,8 +1739,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 10,
-      "lead_time_gained_minutes": 0.2
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_24",
@@ -1606,8 +1751,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 13,
-      "lead_time_gained_minutes": 0.1
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_25",
@@ -1617,8 +1763,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_26",
@@ -1628,8 +1775,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_27",
@@ -1639,8 +1787,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
-      "lead_time_gained_minutes": 0.43
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_28",
@@ -1650,8 +1799,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
-      "lead_time_gained_minutes": 0.47
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_29",
@@ -1661,8 +1811,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 9,
-      "lead_time_gained_minutes": 0.23
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "FAST_INC_30",
@@ -1672,8 +1823,9 @@
       "naive_flagged": true,
       "naive_flag_index": 16,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 7,
-      "lead_time_gained_minutes": 0.3
+      "pipeline_flag_index": 16,
+      "pipeline_early_warned": true,
+      "lead_time_gained_minutes": 0.0
     },
     {
       "id": "NM_NO_PERM_1",
@@ -1684,6 +1836,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1695,6 +1848,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1706,6 +1860,7 @@
       "naive_flag_index": 15,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1717,6 +1872,7 @@
       "naive_flag_index": 17,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1728,6 +1884,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1739,6 +1896,7 @@
       "naive_flag_index": 17,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1750,6 +1908,7 @@
       "naive_flag_index": 15,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1761,6 +1920,7 @@
       "naive_flag_index": 15,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1772,6 +1932,7 @@
       "naive_flag_index": 15,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1783,6 +1944,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1794,6 +1956,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1805,6 +1968,7 @@
       "naive_flag_index": 15,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1816,6 +1980,7 @@
       "naive_flag_index": 17,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1827,6 +1992,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1838,6 +2004,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1849,6 +2016,7 @@
       "naive_flag_index": 15,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1860,6 +2028,7 @@
       "naive_flag_index": 14,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1871,6 +2040,7 @@
       "naive_flag_index": 14,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1882,6 +2052,7 @@
       "naive_flag_index": 15,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1893,6 +2064,7 @@
       "naive_flag_index": 15,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1904,6 +2076,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1915,6 +2088,7 @@
       "naive_flag_index": 14,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1926,6 +2100,7 @@
       "naive_flag_index": 15,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1937,6 +2112,7 @@
       "naive_flag_index": 16,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1948,6 +2124,7 @@
       "naive_flag_index": 15,
       "pipeline_flagged": false,
       "pipeline_flag_index": null,
+      "pipeline_early_warned": false,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1958,7 +2135,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1969,7 +2147,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1980,7 +2159,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -1991,7 +2171,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2002,7 +2183,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 7,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2013,7 +2195,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 10,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2024,7 +2207,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2035,7 +2219,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 9,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2046,7 +2231,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 9,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2057,7 +2243,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2068,7 +2255,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2079,7 +2267,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2090,7 +2279,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2101,7 +2291,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2112,7 +2303,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 9,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2123,7 +2315,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 9,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2134,7 +2327,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2145,7 +2339,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 9,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2156,7 +2351,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 9,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2167,7 +2363,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2178,7 +2375,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2189,7 +2387,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 9,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2200,7 +2399,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 9,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2211,7 +2411,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2222,7 +2423,8 @@
       "naive_flagged": false,
       "naive_flag_index": null,
       "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flag_index": 8,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2232,8 +2434,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2243,8 +2446,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2254,8 +2458,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2265,8 +2470,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2276,8 +2482,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2287,8 +2494,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 7,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2298,8 +2506,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2309,8 +2518,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2320,8 +2530,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 13,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2331,8 +2542,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 4,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2342,8 +2554,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2353,8 +2566,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 6,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2364,8 +2578,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 10,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2375,8 +2590,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 6,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2386,8 +2602,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2397,8 +2614,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2408,8 +2626,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2419,8 +2638,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 6,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2430,8 +2650,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 4,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2441,8 +2662,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2452,8 +2674,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2463,8 +2686,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2474,8 +2698,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2485,8 +2710,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2496,8 +2722,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2507,8 +2734,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2518,8 +2746,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 3,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2529,8 +2758,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2540,8 +2770,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 2,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     },
     {
@@ -2551,8 +2782,9 @@
       "ground_truth_breach_index": null,
       "naive_flagged": false,
       "naive_flag_index": null,
-      "pipeline_flagged": true,
-      "pipeline_flag_index": 6,
+      "pipeline_flagged": false,
+      "pipeline_flag_index": null,
+      "pipeline_early_warned": true,
       "lead_time_gained_minutes": 0.0
     }
   ]

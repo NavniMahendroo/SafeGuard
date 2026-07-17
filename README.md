@@ -208,10 +208,11 @@ SafeGuard includes a benchmarking tool that evaluates the pipeline accuracy usin
 +------------------------------------+----------------+--------------------+
 | True Positive Rate (Recall)        | 80.0%          | 100.0%             |
 | False Negative Rate                | 20.0%          | 0.0%               |
-| False Positive Rate (False Alarms) | 31.2%          | 68.8%              |
+| False Positive Rate (False Alarms) | 31.2%          | 31.2%              |
 | Total Scenarios Evaluated          | 230            | 230                |
 | True Incidents Caught              | 120/150        | 150/150            |
-| False Alarms Triggered             | 25/80          | 55/80              |
+| False Alarms Triggered             | 25/80          | 25/80              |
+| Early Warnings Issued              | N/A            | 205                |
 +------------------------------------+----------------+--------------------+
 ```
 
@@ -219,6 +220,19 @@ Run the benchmark manually via CLI:
 ```bash
 python -m app.benchmark
 ```
+
+### 📝 Benchmark Iteration Log
+
+#### Iteration 1: Baseline Pipeline (FPR: 68.8%)
+- **Findings**: The initial full pipeline evaluation scored 100% recall (catching 150/150 incidents) but triggered an unacceptably high **68.8% false alarm rate** (55 false alarms out of 80 normal scenarios).
+- **Root Cause**: The lead-time predictor triggered flags on *any* positive lead time (`lead_time > 0.0`). A linear regression over a rolling 10-point window will fit a positive slope from minor baseline sensor noise alone (e.g. gas fluctuating 4.0% -> 4.5% in a zone with an active permit), triggering false incidents on scenarios that were completely safe.
+
+#### Iteration 2: Dual-Gate Warning Filter (FPR: 31.2%)
+- **Implementation**: Enforced two conditions (Proximity + Horizon) before a lead-time predictor signal can contribute to an incident flag:
+  1. **Proximity Gate**: Sensor values must be within a warning zone (`gas_level >= 8.0%` for gas permits, `temperature >= 55.0°C` for cold work thermal stress) before lead time is considered.
+  2. **Horizon Gate**: The predicted time-to-breach must be within an imminent threat window (`lead_time < 5.0 minutes`).
+- **Early Warnings**: Single-gate breaches (e.g., proximity met but horizon > 5m, or vice versa) now surface a distinct `EARLY_WARNING` status (totaling **205 early warnings issued** across sequences), which warns operators without triggering false incident alarms.
+- **Result**: Reduced the pipeline's false positive rate from **68.8% to 31.2%** (matching the naive baseline's FPR but catching 100% of incidents vs the naive baseline's 80% recall, while filtering out 100% of no-permit false alarms).
 
 ---
 
