@@ -32,7 +32,7 @@ graph TD
     B -->|Prediction| F[Lead Time Predictor]
     B -->|RAG Query| G[Regulatory RAG]
     B -->|Pathfinding| H[NetworkX Graph]
-    B -->|Audit Logs| I[/audits/ JSON Files]
+    B -->|Audit Logs| I["/audits/ JSON Files"]
 ```
 
 ### Tech Stack
