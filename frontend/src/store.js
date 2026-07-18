@@ -1,5 +1,12 @@
 import { create } from 'zustand'
 
+// Helper to resolve HTTP protocol dynamically based on client protocol (handles mixed-content HTTPS restrictions on Vercel)
+const getHttpUrl = (apiHost, path) => {
+  const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:'
+  const protocol = isSecure ? 'https' : 'http'
+  return `${protocol}://${apiHost}${path}`
+}
+
 export const useStore = create((set, get) => {
   let ws = null
   let reconnectTimeout = null
@@ -40,7 +47,18 @@ export const useStore = create((set, get) => {
       if (ws) return
 
       let connectionAttempt = 0
-      const hosts = ['127.0.0.1:8000', 'localhost:8000']
+      const hosts = []
+      
+      // 1. Inject production API Host if VITE_API_HOST env variable is set in Vercel
+      const productionHost = import.meta.env.VITE_API_HOST
+      if (productionHost) {
+        const cleanHost = productionHost.replace(/^(https?:\/\/|wss?:\/\/)/, '')
+        hosts.push(cleanHost)
+      }
+      
+      // 2. Add local fallback options
+      hosts.push('127.0.0.1:8000')
+      hosts.push('localhost:8000')
       
       const currentHost = typeof window !== 'undefined' ? window.location.hostname : ''
       if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
@@ -51,8 +69,13 @@ export const useStore = create((set, get) => {
 
       const connectWS = () => {
         const host = hosts[connectionAttempt % hosts.length]
-        console.log(`[Store] Connecting to WebSocket at ws://${host}/ws...`)
-        ws = new WebSocket(`ws://${host}/ws`)
+        
+        // Dynamic WebSocket protocol resolving (WSS for HTTPS production environments)
+        const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:'
+        const protocol = isSecure ? 'wss' : 'ws'
+        
+        console.log(`[Store] Connecting to WebSocket at ${protocol}://${host}/ws...`)
+        ws = new WebSocket(`${protocol}://${host}/ws`)
         
         ws.onopen = () => {
           console.log(`[Store] WebSocket connected to ${host}`)
@@ -119,7 +142,7 @@ export const useStore = create((set, get) => {
     fetchActivePermits: async () => {
       try {
         const apiHost = get().apiHost || '127.0.0.1:8000'
-        const response = await fetch(`http://${apiHost}/api/permits`)
+        const response = await fetch(getHttpUrl(apiHost, '/api/permits'))
         if (response.ok) {
           const data = await response.json()
           set({ active_permits: data })
@@ -133,7 +156,7 @@ export const useStore = create((set, get) => {
     fetchIncidents: async () => {
       try {
         const apiHost = get().apiHost || '127.0.0.1:8000'
-        const response = await fetch(`http://${apiHost}/api/incidents`)
+        const response = await fetch(getHttpUrl(apiHost, '/api/incidents'))
         if (response.ok) {
           const data = await response.json()
           set({ incidents: data })
@@ -147,7 +170,7 @@ export const useStore = create((set, get) => {
     issuePermit: async (type, zone) => {
       try {
         const apiHost = get().apiHost || '127.0.0.1:8000'
-        const response = await fetch(`http://${apiHost}/api/permits`, {
+        const response = await fetch(getHttpUrl(apiHost, '/api/permits'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type, zone })
@@ -168,7 +191,7 @@ export const useStore = create((set, get) => {
     revokePermit: async (permitId) => {
       try {
         const apiHost = get().apiHost || '127.0.0.1:8000'
-        const response = await fetch(`http://${apiHost}/api/permits/${permitId}`, {
+        const response = await fetch(getHttpUrl(apiHost, `/api/permits/${permitId}`), {
           method: 'DELETE'
         })
         if (!response.ok) throw new Error('Failed to revoke permit')
@@ -184,7 +207,7 @@ export const useStore = create((set, get) => {
     resolveIncident: async () => {
       try {
         const apiHost = get().apiHost || '127.0.0.1:8000'
-        const response = await fetch(`http://${apiHost}/api/resolve`, {
+        const response = await fetch(getHttpUrl(apiHost, '/api/resolve'), {
           method: 'POST'
         })
         if (!response.ok) throw new Error('Failed to resolve incident')
@@ -201,7 +224,7 @@ export const useStore = create((set, get) => {
     resetDemo: async () => {
       try {
         const apiHost = get().apiHost || '127.0.0.1:8000'
-        const response = await fetch(`http://${apiHost}/api/reset`, {
+        const response = await fetch(getHttpUrl(apiHost, '/api/reset'), {
           method: 'POST'
         })
         if (!response.ok) throw new Error('Failed to reset demo')
