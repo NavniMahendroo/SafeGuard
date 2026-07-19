@@ -6,6 +6,14 @@
 
 ---
 
+## 🌐 Production Deployments
+
+* **🖥️ Live Frontend (Vercel)**: [https://safe-guard-inky.vercel.app/](https://safe-guard-inky.vercel.app/)
+* **⚙️ Live Backend (Render)**: [https://safeguard-6iax.onrender.com](https://safeguard-6iax.onrender.com)
+* **🗄️ Database (Neon)**: Serverless PostgreSQL Database Instance
+
+---
+
 ## ⚡ Overview
 
 SafeGuard is a comprehensive safety intelligence system for industrial facilities that fuses live sensor data with work permit registries to detect compound hazards and trigger automated evacuation protocols. The system includes:
@@ -14,7 +22,7 @@ SafeGuard is a comprehensive safety intelligence system for industrial facilitie
 - **Compound Risk Engine**: Multi-rule evaluation against regulatory standards (OISD-STD-137, FACTORY-ACT-SEC-36, DGMS-THERMAL-STRESS).
 - **ML Anomaly Detection**: Isolation Forest for detecting abnormal sensor patterns.
 - **Lead Time Prediction**: Linear regression to predict time to critical threshold breach.
-- **Regulatory RAG**: Sentence-transformers + FAISS for retrieving relevant regulations.
+- **Regulatory RAG**: Lightweight `fastembed` + FAISS for retrieving relevant regulations.
 - **Dynamic A* Pathfinding**: NetworkX-based evacuation routing with complete incoming/outgoing edge hazard penalization.
 - **Flight Data Recorder & Audit Logs**: Generates and persists JSON audit snapshots with RAG safety context.
 - **Self-Healing Reconnections**: Auto-reconnect with exponential backoff on connection drops and dual-stack IPv4/IPv6 host rotations.
@@ -46,7 +54,7 @@ graph TD
 - NetworkX for graph modeling and A* pathfinding
 - scikit-learn Isolation Forest for anomaly detection
 - NumPy for lead time prediction (linear regression)
-- sentence-transformers + FAISS for regulatory RAG
+- **`fastembed` + FAISS** for regulatory RAG (migrated from `sentence-transformers` for a **4x memory reduction**, loading the model inside a ~125MB footprint on Render's 512MB free tier limit)
 - tabulate (with custom text fallbacks) for formatting statistics
 
 **Frontend (React/Vite):**
@@ -56,9 +64,12 @@ graph TD
 - Lucide React for icons
 - Native SVG for floor layout rendering
 
-**Infrastructure:**
-- Docker Compose with 3 services (PostgreSQL, Backend, Frontend)
-- Nginx for frontend serving and API proxying
+**Infrastructure & Deployments:**
+- **Frontend Host**: Vercel (custom root path builds)
+- **Backend Host**: Render Docker Web Service (uses build-time model caching)
+- **Database**: Neon Serverless PostgreSQL
+- **Local Dev Orchestration**: Docker Compose with 3 services (PostgreSQL, Backend, Frontend)
+- **Nginx**: Frontend serving and API proxying (local compose configuration)
 
 ---
 
