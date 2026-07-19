@@ -14,12 +14,20 @@ if DATABASE_URL.startswith("postgres://"):
 elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-# Strip out channel_binding query parameter if present since asyncpg doesn't support it
-if "channel_binding=" in DATABASE_URL:
+# Strip out channel_binding query parameter and convert sslmode=require to ssl=require since asyncpg expects ssl
+if "channel_binding=" in DATABASE_URL or "sslmode=" in DATABASE_URL:
     import urllib.parse
     parsed_url = urllib.parse.urlparse(DATABASE_URL)
     query_params = urllib.parse.parse_qs(parsed_url.query)
+    
+    # Strip unsupported channel_binding
     query_params.pop("channel_binding", None)
+    
+    # Convert sslmode to ssl
+    if "sslmode" in query_params:
+        sslmode_val = query_params.pop("sslmode")[0]
+        query_params["ssl"] = [sslmode_val]
+        
     new_query = urllib.parse.urlencode(query_params, doseq=True)
     DATABASE_URL = parsed_url._replace(query=new_query).geturl()
 
