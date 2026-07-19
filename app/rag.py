@@ -1,10 +1,10 @@
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 import faiss
 import numpy as np
 from typing import List, Dict
 
 # ==============================================================================
-# REGULATORY RAG - SENTENCE TRANSFORMERS + FAISS
+# REGULATORY RAG - LAZY LOAD FAISS INDEX
 # ==============================================================================
 
 class RegulatoryRAG:
@@ -15,9 +15,9 @@ class RegulatoryRAG:
         self._initialize()
     
     def _initialize(self):
-        """Initialize the sentence transformer model and build FAISS index."""
-        print("[RAG] Loading sentence-transformers model...")
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        """Initialize the fastembed model and build FAISS index."""
+        print("[RAG] Loading fastembed model...")
+        self.model = TextEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
         
         # Define regulatory texts
         self.regulations = [
@@ -40,7 +40,8 @@ class RegulatoryRAG:
         
         # Build embeddings
         texts = [reg["text"] for reg in self.regulations]
-        embeddings = self.model.encode(texts)
+        # fastembed model.embed returns a generator of numpy arrays, we convert it to a full matrix
+        embeddings = np.array(list(self.model.embed(texts)))
         
         # Build FAISS index
         dimension = embeddings.shape[1]
@@ -58,7 +59,7 @@ class RegulatoryRAG:
             return []
         
         # Encode incident description
-        query_embedding = self.model.encode([incident_description])
+        query_embedding = np.array(list(self.model.embed([incident_description])))
         query_embedding = query_embedding.astype('float32')
         
         # Search FAISS index

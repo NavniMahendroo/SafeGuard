@@ -6,7 +6,7 @@ psycopg2-binary
 networkx
 scikit-learn
 numpy
-sentence-transformers
+fastembed
 faiss-cpu
 python-dotenv
 loguru
