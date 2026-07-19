@@ -1,5 +1,8 @@
 FROM python:3.11-slim
 
+# Force stdin, stdout and stderr to be totally unbuffered for real-time logging
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
 # Install system dependencies

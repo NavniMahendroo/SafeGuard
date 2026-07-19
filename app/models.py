@@ -14,6 +14,15 @@ if DATABASE_URL.startswith("postgres://"):
 elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
+# Strip out channel_binding query parameter if present since asyncpg doesn't support it
+if "channel_binding=" in DATABASE_URL:
+    import urllib.parse
+    parsed_url = urllib.parse.urlparse(DATABASE_URL)
+    query_params = urllib.parse.parse_qs(parsed_url.query)
+    query_params.pop("channel_binding", None)
+    new_query = urllib.parse.urlencode(query_params, doseq=True)
+    DATABASE_URL = parsed_url._replace(query=new_query).geturl()
+
 engine = create_async_engine(DATABASE_URL, echo=False)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
