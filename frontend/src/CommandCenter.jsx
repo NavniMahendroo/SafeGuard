@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useStore } from './store';
+import { useStore, getHttpUrl } from './store';
 import FloorLayoutSchematic from './FloorLayoutSchematic';
 import {
   Shield,
@@ -59,7 +59,7 @@ function CommandCenter({ onBack }) {
 
   const handleViewAudit = async (incidentId) => {
     try {
-      const response = await fetch(`http://${apiHost}/api/audit/${incidentId}`);
+      const response = await fetch(getHttpUrl(apiHost, `/api/audit/${incidentId}`));
       if (response.ok) {
         const data = await response.json();
         setActiveAudit(data);

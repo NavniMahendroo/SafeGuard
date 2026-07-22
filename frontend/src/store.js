@@ -1,10 +1,20 @@
 import { create } from 'zustand'
 
 // Helper to resolve HTTP protocol dynamically based on client protocol (handles mixed-content HTTPS restrictions on Vercel)
-const getHttpUrl = (apiHost, path) => {
+export const getHttpUrl = (apiHost, path) => {
   const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:'
   const protocol = isSecure ? 'https' : 'http'
   return `${protocol}://${apiHost}${path}`
+}
+
+// Helper to resolve default host dynamically
+const getDefaultHost = () => {
+  const envHost = import.meta.env.VITE_API_HOST
+  if (envHost) return envHost.replace(/^(https?:\/\/|wss?:\/\/)/, '').replace(/\/$/, '')
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return 'safeguard-6iax.onrender.com'
+  }
+  return '127.0.0.1:8000'
 }
 
 export const useStore = create((set, get) => {
@@ -16,7 +26,7 @@ export const useStore = create((set, get) => {
     // WebSocket connection
     connected: false,
     wsStatus: 'disconnected', // 'connecting' | 'connected' | 'disconnected' | 'reconnecting'
-    apiHost: '127.0.0.1:8000',
+    apiHost: getDefaultHost(),
     
     // Telemetry state
     status: 'NORMAL',
@@ -49,20 +59,16 @@ export const useStore = create((set, get) => {
       let connectionAttempt = 0
       const hosts = []
       
-      // 1. Inject production API Host if VITE_API_HOST env variable is set in Vercel
-      const productionHost = import.meta.env.VITE_API_HOST
-      if (productionHost) {
-        const cleanHost = productionHost.replace(/^(https?:\/\/|wss?:\/\/)/, '')
-        hosts.push(cleanHost)
-      }
-      
-      // 2. Add local fallback options
-      hosts.push('127.0.0.1:8000')
-      hosts.push('localhost:8000')
-      
-      const currentHost = typeof window !== 'undefined' ? window.location.hostname : ''
-      if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
-        hosts.push(`${currentHost}:8000`)
+      const defaultProductionHost = (import.meta.env.VITE_API_HOST || 'safeguard-6iax.onrender.com').replace(/^(https?:\/\/|wss?:\/\/)/, '').replace(/\/$/, '')
+      const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+
+      if (!isLocal) {
+        hosts.push(defaultProductionHost)
+        hosts.push('127.0.0.1:8000')
+      } else {
+        hosts.push('127.0.0.1:8000')
+        hosts.push('localhost:8000')
+        hosts.push(defaultProductionHost)
       }
 
       set({ wsStatus: 'connecting' })
